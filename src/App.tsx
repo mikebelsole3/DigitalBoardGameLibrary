@@ -26,13 +26,13 @@ type BoardGame = {
   designer: Array<string>,
   artist: Array<string>,
   publisher: Array<string>,
-  family: string | null
+  family: string | null,
+  own: number
 }
 
 // IMPORTANT: Replace this with the actual URL of your published Google Sheet data (e.g., as CSV)
-// Example for a published CSV: 'https://docs.google.com/sheets/d/e/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv'
 // You will need to replace 'YOUR_SHEET_ID' and potentially 'gid' if you have multiple sheets.
-const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ82tONzKAbS4g8sfREBApuIw7f8WfIFN2z98r6Br8FEWw8jZK3dCRZXl5XbY8SZbRMLUNp8H7ov99W/pub?gid=202930632&single=true&output=csv'; // <<<--- REPLACE THIS LINE WITH YOUR REAL URL
+const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ82tONzKAbS4g8sfREBApuIw7f8WfIFN2z98r6Br8FEWw8jZK3dCRZXl5XbY8SZbRMLUNp8H7ov99W/pub?gid=202930632&single=true&output=csv';
 
 // Utility function to get unique values for filters
 const getUniqueValues = (data: Array<BoardGame>, key: keyof BoardGame) => {
@@ -78,15 +78,13 @@ type CurrentFilters = {
   selectedWeightCategory: string
   selectedMinAge: number
   showTop100: boolean
-  showRetailGames: boolean
-  showPublisherOfTheMonth: boolean
-  showNewArrivals: boolean
+  showGamesWeSell: boolean
   showStaffPicks: boolean
   selectedCategories: Array<string>
   selectedMechanisms: Array<string>
-  selectedDesigners: Array<string>
-  selectedArtists: Array<string>
-  selectedPublishers: Array<string>
+  selectedDesigners: Array<string>,
+  selectedArtists: Array<string>,
+  selectedPublishers: Array<string>,
   showNCDesignedGames: boolean
 }
 
@@ -94,9 +92,9 @@ type GeneralFilterModalProps = {
   currentFilters: CurrentFilters,
   uniqueCategories: Array<string>,
   uniqueMechanisms: Array<string>,
-  uniqueDesigners: Array<string>, // New prop
-  uniqueArtists: Array<string>,    // New prop
-  uniquePublishers: Array<string>, // New prop
+  uniqueDesigners: Array<string>,
+  uniqueArtists: Array<string>,
+  uniquePublishers: Array<string>,
   onApplyFilters: (newFilters: CurrentFilters) => void,
   onClose: () => void,
 }
@@ -120,15 +118,13 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
   const [tempSelectedWeightCategory, setTempSelectedWeightCategory] = useState(currentFilters.selectedWeightCategory);
   const [tempSelectedMinAge, setTempSelectedMinAge] = useState(currentFilters.selectedMinAge);
   const [tempShowTop100, setTempShowTop100] = useState(currentFilters.showTop100);
-  const [tempShowRetailGames, setTempShowRetailGames] = useState(currentFilters.showRetailGames);
-  const [tempShowPublisherOfTheMonth, setTempShowPublisherOfTheMonth] = useState(currentFilters.showPublisherOfTheMonth);
-  const [tempShowNewArrivals, setTempShowNewArrivals] = useState(currentFilters.showNewArrivals);
+  const [tempShowGamesWeSell, setTempShowGamesWeSell] = useState(currentFilters.showGamesWeSell);
   const [tempShowStaffPicks, setTempShowStaffPicks] = useState(currentFilters.showStaffPicks);
   const [tempSelectedCategories, setTempSelectedCategories] = useState(currentFilters.selectedCategories);
   const [tempSelectedMechanisms, setTempSelectedMechanisms] = useState(currentFilters.selectedMechanisms);
-  const [tempSelectedDesigners, setTempSelectedDesigners] = useState(currentFilters.selectedDesigners); // New state
-  const [tempSelectedArtists, setTempSelectedArtists] = useState(currentFilters.selectedArtists);       // New state
-  const [tempSelectedPublishers, setTempSelectedPublishers] = useState(currentFilters.selectedPublishers); // New state
+  const [tempSelectedDesigners, setTempSelectedDesigners] = useState(currentFilters.selectedDesigners);
+  const [tempSelectedArtists, setTempSelectedArtists] = useState(currentFilters.selectedArtists);
+  const [tempSelectedPublishers, setTempSelectedPublishers] = useState(currentFilters.selectedPublishers);
   const [tempShowNCDesignedGames, setTempShowNCDesignedGames] = useState(currentFilters.showNCDesignedGames);
 
   // New state for advanced filters collapse
@@ -192,15 +188,13 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
       selectedWeightCategory: tempSelectedWeightCategory,
       selectedMinAge: tempSelectedMinAge,
       showTop100: tempShowTop100,
-      showRetailGames: tempShowRetailGames,
-      showPublisherOfTheMonth: tempShowPublisherOfTheMonth,
-      showNewArrivals: tempShowNewArrivals,
+      showGamesWeSell: tempShowGamesWeSell,
       showStaffPicks: tempShowStaffPicks,
       selectedCategories: tempSelectedCategories,
       selectedMechanisms: tempSelectedMechanisms,
-      selectedDesigners: tempSelectedDesigners,   // Pass new states
-      selectedArtists: tempSelectedArtists,       // Pass new states
-      selectedPublishers: tempSelectedPublishers, // Pass new states
+      selectedDesigners: tempSelectedDesigners,
+      selectedArtists: tempSelectedArtists,
+      selectedPublishers: tempSelectedPublishers,
       showNCDesignedGames: tempShowNCDesignedGames,
     });
   };
@@ -212,15 +206,13 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
     setTempSelectedWeightCategory('');
     setTempSelectedMinAge(0);
     setTempShowTop100(false);
-    setTempShowRetailGames(false);
-    setTempShowPublisherOfTheMonth(false);
-    setTempShowNewArrivals(false);
+    setTempShowGamesWeSell(false);
     setTempShowStaffPicks(false);
     setTempSelectedCategories([]);
     setTempSelectedMechanisms([]);
-    setTempSelectedDesigners([]);   // Reset new states
-    setTempSelectedArtists([]);       // Reset new states
-    setTempSelectedPublishers([]); // Reset new states
+    setTempSelectedDesigners([]);
+    setTempSelectedArtists([]);
+    setTempSelectedPublishers([]);
     setTempShowNCDesignedGames(false);
     setShowAdvancedFilters(false); // Reset advanced filters state too
   };
@@ -324,7 +316,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
           </div>
         </div>
 
-        {/* Button Filters (reverted from checkboxes) */}
+        {/* Button Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <button
             onClick={() => setTempShowTop100(!tempShowTop100)}
@@ -334,25 +326,11 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
             BGG Top 100 Games
           </button>
           <button
-            onClick={() => setTempShowRetailGames(!tempShowRetailGames)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowRetailGames ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
+            onClick={() => setTempShowGamesWeSell(!tempShowGamesWeSell)}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowGamesWeSell ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
               }`}
           >
-            Try Before You Buy
-          </button>
-          <button
-            onClick={() => setTempShowPublisherOfTheMonth(!tempShowPublisherOfTheMonth)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowPublisherOfTheMonth ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
-              }`}
-          >
-            Publisher of the Month
-          </button>
-          <button
-            onClick={() => setTempShowNewArrivals(!tempShowNewArrivals)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNewArrivals ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-teal-200 text-teal-800 hover:bg-teal-300'
-              }`}
-          >
-            New Arrivals
+            Games We Sell
           </button>
           <button
             onClick={() => setTempShowStaffPicks(!tempShowStaffPicks)}
@@ -527,15 +505,13 @@ function App() {
   const [selectedWeightCategory, setSelectedWeightCategory] = useState('');
   const [selectedMinAge, setSelectedMinAge] = useState(0);
   const [showTop100, setShowTop100] = useState(false);
-  const [showRetailGames, setShowRetailGames] = useState(false);
-  const [showPublisherOfTheMonth, setShowPublisherOfTheMonth] = useState(false);
-  const [showNewArrivals, setShowNewArrivals] = useState(false);
+  const [showGamesWeSell, setShowGamesWeSell] = useState(false);
   const [showStaffPicks, setShowStaffPicks] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Array<string>>([]);
   const [selectedMechanisms, setSelectedMechanisms] = useState<Array<string>>([]);
-  const [selectedDesigners, setSelectedDesigners] = useState<Array<string>>([]);   // New filter state
-  const [selectedArtists, setSelectedArtists] = useState<Array<string>>([]);       // New filter state
-  const [selectedPublishers, setSelectedPublishers] = useState<Array<string>>([]); // New filter state
+  const [selectedDesigners, setSelectedDesigners] = useState<Array<string>>([]);
+  const [selectedArtists, setSelectedArtists] = useState<Array<string>>([]);
+  const [selectedPublishers, setSelectedPublishers] = useState<Array<string>>([]);
   const [showNCDesignedGames, setShowNCDesignedGames] = useState(false);
 
   const [showGeneralFilterModal, setShowGeneralFilterModal] = useState(false);
@@ -626,10 +602,11 @@ function App() {
         staffpicksdescription: string | null,
         category: string[],
         mechanism: string[],
-        designer: string[], // Initialize new fields as arrays
-        artist: string[],    // Initialize new fields as arrays
-        publisher: string[], // Initialize new fields as arrays
+        designer: string[],
+        artist: string[],
+        publisher: string[],
         family: string | null,
+        own: number
       } = {
         id: '',
         name: 'Unknown Game',
@@ -652,10 +629,11 @@ function App() {
         staffpicksdescription: null,
         category: [],
         mechanism: [],
-        designer: [], // Initialize new fields as arrays
-        artist: [],    // Initialize new fields as arrays
-        publisher: [], // Initialize new fields as arrays
+        designer: [],
+        artist: [],
+        publisher: [],
         family: null,
+        own: 0
       };
 
       headers.forEach((header, index) => {
@@ -693,10 +671,11 @@ function App() {
           case 'staffpicksdescription': game.staffpicksdescription = value || null; break;
           case 'category': game.category = parseCommaSeparatedTags(value); break;
           case 'mechanism': game.mechanism = parseCommaSeparatedTags(value); break;
-          case 'designer': game.designer = parseCommaSeparatedTags(value); break; // Parse designer
-          case 'artist': game.artist = parseCommaSeparatedTags(value); break;     // Parse artist
-          case 'publisher': game.publisher = parseCommaSeparatedTags(value); break; // Parse publisher
+          case 'designer': game.designer = parseCommaSeparatedTags(value); break;
+          case 'artist': game.artist = parseCommaSeparatedTags(value); break;
+          case 'publisher': game.publisher = parseCommaSeparatedTags(value); break;
           case 'family': game.family = value || null; break;
+          case 'own': game.own = parseInt(value, 10) || 0; break;
           default: break;
         }
       });
@@ -714,7 +693,9 @@ function App() {
       game.name = game.name || 'Unknown Game';
       game.imageUrl = game.imageUrl || `https://placehold.co/150x150/cccccc/000000?text=${game.name ? game.name.substring(0, 5) : 'Game'}...`;
 
-      games.push(game);
+      if (game.own !== 0) {
+        games.push(game);
+      }
     }
     console.log(`Successfully parsed ${games.length} games.`);
     return games;
@@ -722,9 +703,9 @@ function App() {
 
   const uniqueCategories = useMemo(() => getUniqueValues(boardGames, 'category') as Array<string>, [boardGames]);
   const uniqueMechanisms = useMemo(() => getUniqueValues(boardGames, 'mechanism') as Array<string>, [boardGames]);
-  const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer') as Array<string>, [boardGames]); // New unique values
-  const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist') as Array<string>, [boardGames]);     // New unique values
-  const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher') as Array<string>, [boardGames]); // New unique values
+  const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer') as Array<string>, [boardGames]);
+  const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist') as Array<string>, [boardGames]);
+  const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher') as Array<string>, [boardGames]);
 
 
   // Filtered games based on all criteria
@@ -733,29 +714,25 @@ function App() {
       const matchesSearch = (searchTerm === '' || (game.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()));
       const matchesPlayers = desiredPlayers === 0 || (game.minPlayers <= desiredPlayers && game.maxPlayers >= desiredPlayers);
       const matchesTime = desiredTime === 0 || (game.minTime <= desiredTime && game.maxTime >= desiredTime);
-      // Updated complexity filter logic to use "Low", "Medium", "High"
       const matchesWeightCategory = selectedWeightCategory === '' ||
         (selectedWeightCategory === 'Low' && game.weight >= 1 && game.weight <= 2) ||
         (selectedWeightCategory === 'Medium' && game.weight > 2 && game.weight <= 2.5) ||
         (selectedWeightCategory === 'High' && game.weight > 2.5 && game.weight <= 5);
       const matchesMinAge = selectedMinAge === 0 || (game.minAgeValue !== null && game.minAgeValue > 0 && game.minAgeValue <= selectedMinAge);
       const matchesTop100 = !showTop100 || (game.rank !== null && game.rank <= 100);
-      const matchesRetailGames = !showRetailGames || (game.retailPrice !== null);
-      const matchesPublisherOfTheMonth = !showPublisherOfTheMonth || (game.shelfLocation === 'Publisher of the Month');
-      const matchesNewArrivals = !showNewArrivals || (game.shelfLocation === 'New Arrivals');
+      const matchesGamesWeSell = !showGamesWeSell || (game.retailPrice !== null);
       const matchesStaffPicks = !showStaffPicks || (game.staffpicksname !== null && game.staffpicksname !== '');
       const matchesCategories = selectedCategories.length === 0 || selectedCategories.some(cat => game.category.includes(cat));
       const matchesMechanisms = selectedMechanisms.length === 0 || selectedMechanisms.some(mech => game.mechanism.includes(mech));
-      // New filter conditions
       const matchesDesigners = selectedDesigners.length === 0 || selectedDesigners.some(designer => game.designer.includes(designer));
       const matchesArtists = selectedArtists.length === 0 || selectedArtists.some(artist => game.artist.includes(artist));
       const matchesPublishers = selectedPublishers.length === 0 || selectedPublishers.some(publisher => game.publisher.includes(publisher));
 
       const matchesNCDesignedGames = !showNCDesignedGames || (game.family && game.family.includes('Organizations: Game Designers of North Carolina'));
 
-      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesRetailGames && matchesPublisherOfTheMonth && matchesNewArrivals && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames;
+      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesGamesWeSell && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames;
     });
-  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showRetailGames, showPublisherOfTheMonth, showNewArrivals, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, boardGames]);
+  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showGamesWeSell, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, boardGames]);
 
   // Reset all filters (on main display)
   const handleResetFilters = () => {
@@ -765,284 +742,274 @@ function App() {
     setSelectedWeightCategory('');
     setSelectedMinAge(0);
     setShowTop100(false);
-    setShowRetailGames(false);
-    setShowPublisherOfTheMonth(false);
-    setShowNewArrivals(false);
+    setShowGamesWeSell(false);
     setShowStaffPicks(false);
     setSelectedCategories([]);
     setSelectedMechanisms([]);
-    setSelectedDesigners([]);   // Reset new filter states
-    setSelectedArtists([]);       // Reset new filter states
-    setSelectedPublishers([]); // Reset new filter states
+    setSelectedDesigners([]);
+    setSelectedArtists([]);
+    setSelectedPublishers([]);
     setShowNCDesignedGames(false);
   };
 
   // Callback to apply filters from the modal
   const applyFiltersFromModal = (newFilters: CurrentFilters) => {
-    // searchTerm is NOT updated by the modal, it's independent
     setDesiredPlayers(newFilters.desiredPlayers);
     setDesiredTime(newFilters.desiredTime);
     setSelectedWeightCategory(newFilters.selectedWeightCategory);
     setSelectedMinAge(newFilters.selectedMinAge);
     setShowTop100(newFilters.showTop100);
-    setShowRetailGames(newFilters.showRetailGames);
-    setShowPublisherOfTheMonth(newFilters.showPublisherOfTheMonth);
-    setShowNewArrivals(newFilters.showNewArrivals);
+    setShowGamesWeSell(newFilters.showGamesWeSell);
     setShowStaffPicks(newFilters.showStaffPicks);
     setSelectedCategories(newFilters.selectedCategories);
     setSelectedMechanisms(newFilters.selectedMechanisms);
-    setSelectedDesigners(newFilters.selectedDesigners);   // Apply new states
-    setSelectedArtists(newFilters.selectedArtists);       // Apply new states
-    setSelectedPublishers(newFilters.selectedPublishers); // Apply new states
+    setSelectedDesigners(newFilters.selectedDesigners);
+    setSelectedArtists(newFilters.selectedArtists);
+    setSelectedPublishers(newFilters.selectedPublishers);
     setShowNCDesignedGames(newFilters.showNCDesignedGames);
     setShowGeneralFilterModal(false); // Close modal after applying
   };
 
+  // Handler to blur the input on Enter key press
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur(); // This will unfocus the input, closing the keyboard on mobile
+    }
+  };
+
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 font-inter p-4 sm:p-6 md:p-8">
+    // The main container now uses `h-full` and `flex flex-col` to allow internal scrolling.
+    <div className="h-full flex flex-col bg-gradient-to-br from-blue-100 to-purple-200 font-inter p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <header className="text-center mb-8 bg-white p-6 rounded-xl shadow-lg">
+      <header className="text-center mb-8 bg-white p-6 rounded-xl shadow-lg flex-shrink-0">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-800 mb-2">
           🎲 Tabletop Inn Game Library 📚
         </h1>
         <p className="text-lg text-gray-700">Explore our collection of over 800 board games!</p>
       </header>
 
-      {/* Search Bar */}
-      <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-        <div className="mb-6">
-          <label htmlFor="search" className="block text-gray-700 text-lg font-semibold mb-2">
-            Search Games
-          </label>
-          <input
-            type="text"
-            id="search"
-            placeholder="Search by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-          />
-        </div>
-
-        {/* Filter Buttons Section */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-          <button
-            onClick={() => setShowGeneralFilterModal(true)}
-            className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out text-xl transform hover:scale-105"
-          >
-            Open All Filters
-          </button>
-          <button
-            onClick={handleResetFilters}
-            className="px-8 py-4 bg-red-500 text-white font-bold rounded-lg shadow-xl hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-offset-2 transition duration-300 ease-in-out text-xl transform hover:scale-105"
-          >
-            Reset All Filters
-          </button>
-        </div>
-      </div>
-
-      {/* Display Applied Filters */}
-      {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showRetailGames || showPublisherOfTheMonth || showNewArrivals || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0) && (
+      {/* Main content area - now scrollable */}
+      <main className="flex-1 overflow-y-auto pb-4"> {/* Added pb-4 for bottom padding */}
+        {/* Search Bar */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Applied Filters</h3>
-          <div className="flex flex-wrap justify-center gap-3">
-            {searchTerm !== '' && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Search: "{searchTerm}"
-              </span>
-            )}
-            {desiredPlayers !== 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Players: {desiredPlayers}
-              </span>
-            )}
-            {desiredTime !== 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Time: {desiredTime} min
-              </span>
-            )}
-            {selectedWeightCategory !== '' && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Complexity: {selectedWeightCategory}
-              </span>
-            )}
-            {selectedMinAge !== 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Min Age: {selectedMinAge}+
-              </span>
-            )}
-            {showTop100 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                BGG Top 100
-              </span>
-            )}
-            {showRetailGames && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Try Before You Buy
-              </span>
-            )}
-            {showPublisherOfTheMonth && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Publisher of the Month
-              </span>
-            )}
-            {showNewArrivals && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                New Arrivals
-              </span>
-            )}
-            {showStaffPicks && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Staff Picks
-              </span>
-            )}
-            {showNCDesignedGames && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Designed in NC
-              </span>
-            )}
-            {selectedCategories.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Categories: {selectedCategories.join(', ')}
-              </span>
-            )}
-            {selectedMechanisms.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Mechanisms: {selectedMechanisms.join(', ')}
-              </span>
-            )}
-            {selectedDesigners.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Designers: {selectedDesigners.join(', ')}
-              </span>
-            )}
-            {selectedArtists.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Artists: {selectedArtists.join(', ')}
-              </span>
-            )}
-            {selectedPublishers.length > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                Publishers: {selectedPublishers.join(', ')}
-              </span>
-            )}
+          <div className="mb-6">
+            <label htmlFor="search" className="block text-gray-700 text-lg font-semibold mb-2">
+              Search Games
+            </label>
+            <input
+              type="text"
+              id="search"
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown} // Added onKeyDown handler
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+            />
+          </div>
+
+          {/* Filter Buttons Section */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+            <button
+              onClick={() => setShowGeneralFilterModal(true)}
+              className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out text-xl transform hover:scale-105"
+            >
+              Open All Filters
+            </button>
+            <button
+              onClick={handleResetFilters}
+              className="px-8 py-4 bg-red-500 text-white font-bold rounded-lg shadow-xl hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-offset-2 transition duration-300 ease-in-out text-xl transform hover:scale-105"
+            >
+              Reset All Filters
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Game List Display */}
-      <div className="bg-white p-6 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Available Games ({filteredGames.length})
-        </h2>
-        {loading ? (
-          <p className="text-center text-gray-600 text-xl">Loading games...</p>
-        ) : error ? (
-          <p className="text-center text-red-600 text-xl">{error}</p>
-        ) : filteredGames.length === 0 ? (
-          <p className="text-center text-gray-600 text-xl">No games match your criteria. Try adjusting your filters!</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {filteredGames.map((game, index) => (
-              <div
-                key={`${game.id}-${index}`}
-                className="bg-blue-50 p-4 rounded-xl shadow-md flex flex-col items-center text-center transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer"
-                onClick={() => setSelectedGame(game)}
-              >
-                <img
-                  src={game.imageUrl}
-                  alt={game.name}
-                  className="w-32 h-32 object-cover rounded-lg mb-4 shadow-sm"
-                  onError={(e: any) => {
-                    if (!e.target.src.includes('placehold.co')) {
-                      e.target.onerror = null;
-                      e.target.src = `https://placehold.co/150x150/cccccc/000000?text=${game.name ? game.name.substring(0, 5) : 'Game'}...`;
-                    }
-                  }}
-                />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{game.name}</h3>
-
-                {/* BGG Rank - Now conditionally displays "BGG Top 100 Game" above player count */}
-                {game.rank !== null && game.rank <= 100 && (
-                  <p className="mb-2 px-2 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-xs sm:text-sm shadow-sm">
-                    BGG Top 100 Game
-                  </p>
-                )}
-
-                {/* Staff Pick Badge */}
-                {game.staffpicksname && (
-                  <p className="mb-2 px-2 py-1 bg-pink-400 text-pink-900 font-bold rounded-full text-xs sm:text-sm shadow-sm">
-                    ⭐ Staff Pick by {game.staffpicksname} ⭐
-                  </p>
-                )}
-
-                {/* Designed in NC Label with Designer Name */}
-                {game.family && game.family.includes('Organizations: Game Designers of North Carolina') && (
-                  <p className="mb-2 px-2 py-1 bg-[#155084] text-white font-bold rounded-full text-xs sm:text-sm shadow-sm">
-                    Designed in NC by {game.designer.join(', ')}
-                  </p>
-                )}
-
-                <p className="text-gray-700 text-sm mb-1">
-                  <span className="font-semibold">Players:</span>{' '}
-                  {game.minPlayers === game.maxPlayers
-                    ? game.minPlayers
-                    : `${game.minPlayers} - ${game.maxPlayers}`}
-                </p>
-                <p className="text-gray-700 text-sm mb-1">
-                  <span className="font-semibold">Time:</span>{' '}
-                  {game.minTime === game.maxTime
-                    ? `${game.minTime} min`
-                    : `${game.minTime} - ${game.maxTime} min`}
-                </p>
-                {/* Age Range - Moved under Time and simplified display */}
-                {game.minAgeValue !== null && game.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Ages:</span> {game.minAgeValue}+
-                  </p>
-                )}
-                {/* Displaying the Complexity with color coding */}
-                {game.weight !== undefined && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Complexity:</span>{' '}
-                    <span
-                      style={{ color: getColorForWeight(game.weight), fontWeight: 'bold' }}
-                      title={`Complexity: ${game.weight.toFixed(1)} out of 5`}
-                    >
-                      {/* Convert numeric weight to Low/Medium/High for display */}
-                      {game.weight >= 1 && game.weight <= 2 ? 'Low' :
-                        game.weight > 2 && game.weight <= 2.5 ? 'Medium' :
-                          game.weight > 2.5 && game.weight <= 5 ? 'High' :
-                            ''}
-                    </span>
-                  </p>
-                )}
-                {/* BGG Rating */}
-                {game.average !== null && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">BGG Rating:</span> {game.average.toFixed(2)}
-                  </p>
-                )}
-                {/* Removed Game Type */}
-                {/* Retail Price - Prominent display */}
-                {game.retailPrice !== null && (
-                  <p className="text-green-700 text-lg font-extrabold mt-2">
-                    Price: ${game.retailPrice.toFixed(2)}
-                  </p>
-                )}
-                {/* Location - Made more prominent */}
-                {game.shelfLocation && (
-                  <p className="mt-3 px-3 py-1 bg-blue-200 text-blue-800 font-bold rounded-full text-xs sm:text-sm shadow-sm">
-                    Location: {game.shelfLocation}
-                  </p>
-                )}
-                {/* Removed description from unexpanded card */}
-              </div>
-            ))}
+        {/* Display Applied Filters */}
+        {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showGamesWeSell || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0) && (
+          <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Applied Filters</h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {searchTerm !== '' && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Search: "{searchTerm}"
+                </span>
+              )}
+              {desiredPlayers !== 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Players: {desiredPlayers}
+                </span>
+              )}
+              {desiredTime !== 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Time: {desiredTime} min
+                </span>
+              )}
+              {selectedWeightCategory !== '' && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Complexity: {selectedWeightCategory}
+                </span>
+              )}
+              {selectedMinAge !== 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Min Age: {selectedMinAge}+
+                </span>
+              )}
+              {showTop100 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  BGG Top 100
+                </span>
+              )}
+              {showGamesWeSell && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Games We Sell
+                </span>
+              )}
+              {showStaffPicks && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Staff Picks
+                </span>
+              )}
+              {showNCDesignedGames && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Designed in NC
+                </span>
+              )}
+              {selectedCategories.length > 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Categories: {selectedCategories.join(', ')}
+                </span>
+              )}
+              {selectedMechanisms.length > 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Mechanisms: {selectedMechanisms.join(', ')}
+                </span>
+              )}
+              {selectedDesigners.length > 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Designers: {selectedDesigners.join(', ')}
+                </span>
+              )}
+              {selectedArtists.length > 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Artists: {selectedArtists.join(', ')}
+                </span>
+              )}
+              {selectedPublishers.length > 0 && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Publishers: {selectedPublishers.join(', ')}
+                </span>
+              )}
+            </div>
           </div>
         )}
-      </div>
+
+        {/* Game List Display */}
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Available Games ({filteredGames.length})
+          </h2>
+          {loading ? (
+            <p className="text-center text-gray-600 text-xl">Loading games...</p>
+          ) : error ? (
+            <p className="text-center text-red-600 text-xl">{error}</p>
+          ) : filteredGames.length === 0 ? (
+            <p className="text-center text-gray-600 text-xl">No games match your criteria. Try adjusting your filters!</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {filteredGames.map((game, index) => (
+                <div
+                  key={`${game.id}-${index}`}
+                  className="bg-blue-50 p-4 rounded-xl shadow-md flex flex-col items-center text-center transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer"
+                  onClick={() => setSelectedGame(game)}
+                >
+                  <img
+                    src={game.imageUrl}
+                    alt={game.name}
+                    className="w-32 h-32 object-cover rounded-lg mb-4 shadow-sm"
+                    onError={(e: any) => {
+                      if (!e.target.src.includes('placehold.co')) {
+                        e.target.onerror = null;
+                        e.target.src = `https://placehold.co/150x150/cccccc/000000?text=${game.name ? game.name.substring(0, 5) : 'Game'}...`;
+                      }
+                    }}
+                  />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{game.name}</h3>
+
+                  {/* BGG Rank - Now conditionally displays "BGG Top 100 Game" above player count */}
+                  {game.rank !== null && game.rank <= 100 && (
+                    <p className="mb-2 px-2 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-xs sm:text-sm shadow-sm">
+                      BGG Top 100 Game
+                    </p>
+                  )}
+
+                  {/* Staff Pick Badge */}
+                  {game.staffpicksname && (
+                    <p className="mb-2 px-2 py-1 bg-pink-400 text-pink-900 font-bold rounded-full text-xs sm:text-sm shadow-sm">
+                      ⭐ Staff Pick by {game.staffpicksname} ⭐
+                    </p>
+                  )}
+
+                  {/* Designed in NC Label with Designer Name */}
+                  {game.family && game.family.includes('Organizations: Game Designers of North Carolina') && (
+                    <p className="mb-2 px-2 py-1 bg-[#155084] text-white font-bold rounded-full text-xs sm:text-sm shadow-sm">
+                      Designed in NC by {game.designer.join(', ')}
+                    </p>
+                  )}
+
+                  <p className="text-gray-700 text-sm mb-1">
+                    <span className="font-semibold">Players:</span>{' '}
+                    {game.minPlayers === game.maxPlayers
+                      ? game.minPlayers
+                      : `${game.minPlayers} - ${game.maxPlayers}`}
+                  </p>
+                  <p className="text-gray-700 text-sm mb-1">
+                    <span className="font-semibold">Time:</span>{' '}
+                    {game.minTime === game.maxTime
+                      ? `${game.minTime} min`
+                      : `${game.minTime} - ${game.maxTime} min`}
+                  </p>
+                  {/* Age Range - Moved under Time and simplified display */}
+                  {game.minAgeValue !== null && game.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">Ages:</span> {game.minAgeValue}+
+                    </p>
+                  )}
+                  {/* Displaying the Complexity with color coding */}
+                  {game.weight !== undefined && (
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">Complexity:</span>{' '}
+                      <span
+                        style={{ color: getColorForWeight(game.weight), fontWeight: 'bold' }}
+                        title={`Complexity: ${game.weight.toFixed(1)} out of 5`}
+                      >
+                        {/* Convert numeric weight to Low/Medium/High for display */}
+                        {game.weight >= 1 && game.weight <= 2 ? 'Low' :
+                          game.weight > 2 && game.weight <= 2.5 ? 'Medium' :
+                            game.weight > 2.5 && game.weight <= 5 ? 'High' :
+                              ''}
+                      </span>
+                    </p>
+                  )}
+                  {/* BGG Rating */}
+                  {game.average !== null && (
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">BGG Rating:</span> {game.average.toFixed(2)}
+                    </p>
+                  )}
+                  {/* Retail Price - Prominent display */}
+                  {game.retailPrice !== null && (
+                    <p className="text-green-700 text-lg font-extrabold mt-2">
+                      Price: ${game.retailPrice.toFixed(2)}
+                    </p>
+                  )}
+                  {/* Removed Location from game card display */}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Expanded Game Modal */}
       {selectedGame && (
@@ -1051,12 +1018,13 @@ function App() {
           onClick={() => setSelectedGame(null)} // Click outside to close
         >
           <div
-            className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out"
+            className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
           >
             <button
               onClick={() => setSelectedGame(null)}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold p-[5px] rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-[20px]"
+              // Increased size and padding for easier tapping
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-4xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-none"
               aria-label="Close"
             >
               &times;
@@ -1067,7 +1035,7 @@ function App() {
                 <img
                   src={selectedGame.imageUrl}
                   alt={selectedGame.name}
-                  className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64" // Added max-h-64
+                  className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64"
                   onError={(e: any) => {
                     if (!e.target.src.includes('placehold.co')) {
                       e.target.onerror = null;
@@ -1203,28 +1171,26 @@ function App() {
         showGeneralFilterModal && (
           <GeneralFilterModal
             currentFilters={{
-              searchTerm, // Pass searchTerm to the modal even if it doesn't manage it
+              searchTerm,
               desiredPlayers,
               desiredTime,
               selectedWeightCategory,
               selectedMinAge,
               showTop100,
-              showRetailGames,
-              showPublisherOfTheMonth,
-              showNewArrivals,
+              showGamesWeSell,
               showStaffPicks,
               selectedCategories,
               selectedMechanisms,
-              selectedDesigners,   // Pass new filter states
-              selectedArtists,       // Pass new filter states
-              selectedPublishers, // Pass new filter states
+              selectedDesigners,
+              selectedArtists,
+              selectedPublishers,
               showNCDesignedGames,
             }}
             uniqueCategories={uniqueCategories}
             uniqueMechanisms={uniqueMechanisms}
-            uniqueDesigners={uniqueDesigners} // Pass unique values
-            uniqueArtists={uniqueArtists}    // Pass unique values
-            uniquePublishers={uniquePublishers} // Pass unique values
+            uniqueDesigners={uniqueDesigners}
+            uniqueArtists={uniqueArtists}
+            uniquePublishers={uniquePublishers}
             onApplyFilters={applyFiltersFromModal}
             onClose={() => setShowGeneralFilterModal(false)}
           />
@@ -1232,7 +1198,7 @@ function App() {
       }
 
       {/* Footer */}
-      <footer className="text-center mt-8 text-gray-600 text-sm">
+      <footer className="text-center mt-8 text-gray-600 text-sm flex-shrink-0">
         <p>&copy; 2025 Well Played Board Game Cafe. All rights reserved.</p>
       </footer>
     </div >
