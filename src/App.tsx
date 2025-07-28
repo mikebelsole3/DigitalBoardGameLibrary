@@ -1,31 +1,33 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-       type BoardGame = { 
-        id: string,
-        name: string, 
-        minPlayers: number, 
-        maxPlayers: number, 
-        difficulty: number, 
-        minTime: number, 
-        maxTime: number, 
-        shelfLocation: string, 
-        description: string, 
-        imageUrl: string, 
-        weight: number, 
-        itemType: string, 
-        rank: number | null, 
-        average: number | null, 
-        retailPrice: number | null, 
-        bggRecAgeRange: string | null, 
-        minAgeValue: number | null, 
-        staffpicksname: string | null, 
-        staffpicksdescription: string | null, 
-        category: Array<string>, 
-        mechanism: Array<string>, 
-        designer: Array<string>, 
-        artist: Array<string>, 
-        publisher: Array<string>, 
-        family: string | null
-      }
+import './App.css'
+import { useState, useEffect, useMemo } from 'react';
+
+type BoardGame = {
+  id: string,
+  name: string,
+  minPlayers: number,
+  maxPlayers: number,
+  difficulty: number,
+  minTime: number,
+  maxTime: number,
+  shelfLocation: string,
+  description: string,
+  imageUrl: string,
+  weight: number,
+  itemType: string,
+  rank: number | null,
+  average: number | null,
+  retailPrice: number | null,
+  bggRecAgeRange: string | null,
+  minAgeValue: number | null,
+  staffpicksname: string | null,
+  staffpicksdescription: string | null,
+  category: Array<string>,
+  mechanism: Array<string>,
+  designer: Array<string>,
+  artist: Array<string>,
+  publisher: Array<string>,
+  family: string | null
+}
 
 // IMPORTANT: Replace this with the actual URL of your published Google Sheet data (e.g., as CSV)
 // Example for a published CSV: 'https://docs.google.com/sheets/d/e/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv'
@@ -33,13 +35,13 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZh8leZ1fjF9dDXaZbD31Bz_9yLAy9GWcW3_YRjKszaqqEadpdi4egRrh38ChCRAMpTbVhU-98wEi/pub?gid=161508505&single=true&output=csv'; // <<<--- REPLACE THIS LINE WITH YOUR REAL URL
 
 // Utility function to get unique values for filters
-const getUniqueValues = (data:Array<BoardGame>, key:keyof BoardGame) => {
-  const values = data.flatMap(item => item[key] || []).filter(value => value !== undefined && value !== null && value !== '');
+const getUniqueValues = (data: Array<BoardGame>, key: keyof BoardGame) => {
+  const values = data.flatMap(item => item[key] || []).filter(value => Boolean(value));
   return [...new Set(values)].sort();
 };
 
 // Function to get discrete colors for the weight rating
-const getColorForWeight = (weight:number) => {
+const getColorForWeight = (weight: number) => {
   const clampedWeight = Math.max(1, Math.min(5, weight));
 
   if (clampedWeight >= 1 && clampedWeight <= 2) {
@@ -53,7 +55,7 @@ const getColorForWeight = (weight:number) => {
 };
 
 // Helper function to parse comma-separated tags, handling quoted commas
-const parseCommaSeparatedTags = (tagString:string) => {
+const parseCommaSeparatedTags = (tagString: string) => {
   if (!tagString) return [];
   const tags = [];
   // This regex splits by comma, but not if the comma is inside double quotes.
@@ -61,7 +63,7 @@ const parseCommaSeparatedTags = (tagString:string) => {
   const regex = /(?:"([^"]*)"|([^,]+))/g;
   let match;
   while ((match = regex.exec(tagString)) !== null) {
-    let tag = match[1] !== undefined ? match[1] : match[2];
+    const tag = match[1] !== undefined ? match[1] : match[2];
     if (tag) {
       tags.push(tag.trim());
     }
@@ -70,36 +72,37 @@ const parseCommaSeparatedTags = (tagString:string) => {
 };
 
 type CurrentFilters = {
-  desiredPlayers:number
-  desiredTime:number
-  selectedWeightCategory:string
-  selectedMinAge:number
-  showTop100:boolean
-  showRetailGames:boolean
-  showPublisherOfTheMonth:boolean
-  showNewArrivals:boolean
-  showStaffPicks:boolean
-  selectedCategories:Array<string>
-  selectedMechanisms:Array<string>
-  selectedDesigners:Array<string>
-  selectedArtists:Array<string>
-  selectedPublishers:Array<string>
-  showNCDesignedGames:boolean
+  searchTerm: string,
+  desiredPlayers: number
+  desiredTime: number
+  selectedWeightCategory: string
+  selectedMinAge: number
+  showTop100: boolean
+  showRetailGames: boolean
+  showPublisherOfTheMonth: boolean
+  showNewArrivals: boolean
+  showStaffPicks: boolean
+  selectedCategories: Array<string>
+  selectedMechanisms: Array<string>
+  selectedDesigners: Array<string>
+  selectedArtists: Array<string>
+  selectedPublishers: Array<string>
+  showNCDesignedGames: boolean
 }
 
 type GeneralFilterModalProps = {
-  currentFilters:CurrentFilters,
-  uniqueCategories:Array<string>,
-  uniqueMechanisms:Array<string>,
-  uniqueDesigners:Array<string>, // New prop
-  uniqueArtists:Array<string>,    // New prop
-  uniquePublishers:Array<string>, // New prop
-  onApplyFilters:(newFilters:CurrentFilters)=>void,
-  onClose:()=>void,
+  currentFilters: CurrentFilters,
+  uniqueCategories: Array<string>,
+  uniqueMechanisms: Array<string>,
+  uniqueDesigners: Array<string>, // New prop
+  uniqueArtists: Array<string>,    // New prop
+  uniquePublishers: Array<string>, // New prop
+  onApplyFilters: (newFilters: CurrentFilters) => void,
+  onClose: () => void,
 }
 
 // Consolidated Filter Modal Component
-const GeneralFilterModal = (props:GeneralFilterModalProps) => {
+const GeneralFilterModal = (props: GeneralFilterModalProps) => {
   const {
     currentFilters,
     uniqueCategories,
@@ -132,15 +135,15 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Handlers for temporary filter changes
-  const handleTempPlayersChange = (delta:number) => {
+  const handleTempPlayersChange = (delta: number) => {
     setTempDesiredPlayers(prev => Math.max(0, prev + delta));
   };
 
-  const handleTempTimeChange = (delta:number) => {
+  const handleTempTimeChange = (delta: number) => {
     setTempDesiredTime(prev => Math.max(0, prev + delta));
   };
 
-  const handleTempCategoryToggle = (category:string) => {
+  const handleTempCategoryToggle = (category: string) => {
     setTempSelectedCategories(prev =>
       prev.includes(category)
         ? prev.filter(c => c !== category)
@@ -148,7 +151,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
     );
   };
 
-  const handleTempMechanismToggle = (mechanism:string) => {
+  const handleTempMechanismToggle = (mechanism: string) => {
     setTempSelectedMechanisms(prev =>
       prev.includes(mechanism)
         ? prev.filter(m => m !== mechanism)
@@ -157,7 +160,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
   };
 
   // New handlers for Designer, Artist, Publisher
-  const handleTempDesignerToggle = (designer:string) => {
+  const handleTempDesignerToggle = (designer: string) => {
     setTempSelectedDesigners(prev =>
       prev.includes(designer)
         ? prev.filter(d => d !== designer)
@@ -165,7 +168,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
     );
   };
 
-  const handleTempArtistToggle = (artist:string) => {
+  const handleTempArtistToggle = (artist: string) => {
     setTempSelectedArtists(prev =>
       prev.includes(artist)
         ? prev.filter(a => a !== artist)
@@ -173,7 +176,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
     );
   };
 
-  const handleTempPublisherToggle = (publisher:string) => {
+  const handleTempPublisherToggle = (publisher: string) => {
     setTempSelectedPublishers(prev =>
       prev.includes(publisher)
         ? prev.filter(p => p !== publisher)
@@ -183,6 +186,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
 
   const handleApplyClick = () => {
     onApplyFilters({
+      searchTerm: currentFilters.searchTerm,
       desiredPlayers: tempDesiredPlayers,
       desiredTime: tempDesiredTime,
       selectedWeightCategory: tempSelectedWeightCategory,
@@ -228,7 +232,7 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
       onClick={onClose} // Close modal when clicking outside
     >
       <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
-           onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside from closing modal */}
+        onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside from closing modal */}
         <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center">All Filters</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
@@ -324,49 +328,43 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <button
             onClick={() => setTempShowTop100(!tempShowTop100)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
+              }`}
           >
             BGG Top 100 Games
           </button>
           <button
             onClick={() => setTempShowRetailGames(!tempShowRetailGames)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowRetailGames ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowRetailGames ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
+              }`}
           >
             Try Before You Buy
           </button>
           <button
             onClick={() => setTempShowPublisherOfTheMonth(!tempShowPublisherOfTheMonth)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowPublisherOfTheMonth ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowPublisherOfTheMonth ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
+              }`}
           >
             Publisher of the Month
           </button>
           <button
             onClick={() => setTempShowNewArrivals(!tempShowNewArrivals)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowNewArrivals ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-teal-200 text-teal-800 hover:bg-teal-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNewArrivals ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-teal-200 text-teal-800 hover:bg-teal-300'
+              }`}
           >
             New Arrivals
           </button>
           <button
             onClick={() => setTempShowStaffPicks(!tempShowStaffPicks)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowStaffPicks ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-pink-200 text-pink-800 hover:bg-pink-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowStaffPicks ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-pink-200 text-pink-800 hover:bg-pink-300'
+              }`}
           >
             Staff Picks
           </button>
           <button
             onClick={() => setTempShowNCDesignedGames(!tempShowNCDesignedGames)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${
-              tempShowNCDesignedGames ? 'bg-[#155084] text-white hover:bg-blue-900' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
-            }`}
+            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNCDesignedGames ? 'bg-[#155084] text-white hover:bg-blue-900' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
+              }`}
           >
             Games Designed in NC
           </button>
@@ -517,10 +515,10 @@ const GeneralFilterModal = (props:GeneralFilterModalProps) => {
 
 // Main App component
 function App() {
-  const [boardGames, setBoardGames] = useState([]);
+  const [boardGames, setBoardGames] = useState<BoardGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedGame, setSelectedGame] = useState(null);
+  const [selectedGame, setSelectedGame] = useState<BoardGame | null>(null);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -533,11 +531,11 @@ function App() {
   const [showPublisherOfTheMonth, setShowPublisherOfTheMonth] = useState(false);
   const [showNewArrivals, setShowNewArrivals] = useState(false);
   const [showStaffPicks, setShowStaffPicks] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedMechanisms, setSelectedMechanisms] = useState([]);
-  const [selectedDesigners, setSelectedDesigners] = useState([]);   // New filter state
-  const [selectedArtists, setSelectedArtists] = useState([]);       // New filter state
-  const [selectedPublishers, setSelectedPublishers] = useState([]); // New filter state
+  const [selectedCategories, setSelectedCategories] = useState<Array<string>>([]);
+  const [selectedMechanisms, setSelectedMechanisms] = useState<Array<string>>([]);
+  const [selectedDesigners, setSelectedDesigners] = useState<Array<string>>([]);   // New filter state
+  const [selectedArtists, setSelectedArtists] = useState<Array<string>>([]);       // New filter state
+  const [selectedPublishers, setSelectedPublishers] = useState<Array<string>>([]); // New filter state
   const [showNCDesignedGames, setShowNCDesignedGames] = useState(false);
 
   const [showGeneralFilterModal, setShowGeneralFilterModal] = useState(false);
@@ -570,21 +568,21 @@ function App() {
   }, []);
 
   // Function to parse CSV text into an array of game objects
-  const parseCSV = (csvText:string) => {
+  const parseCSV = (csvText: string) => {
     const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
     if (lines.length === 0) {
       console.warn("CSV data is empty after splitting lines.");
       return [];
     }
 
-    const headers:Array<string> = lines[0].split(',').map(header => header.trim().toLowerCase());
-    const games:Array<BoardGame> = [];
+    const headers: Array<keyof BoardGame | string> = lines[0].split(',').map(header => header.trim().toLowerCase());
+    const games: Array<BoardGame> = [];
 
     const csvSplitRegex = /(?:^|,)(?:"((?:[^"]|"")*)"|([^,]*))/g;
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
-      const values:Array<string> = [];
+      const values: Array<string> = [];
       let match;
 
       csvSplitRegex.lastIndex = 0;
@@ -606,7 +604,33 @@ function App() {
         continue;
       }
 
-      const game = {
+      const game: {
+        id: string,
+        name: string,
+        minPlayers: number,
+        maxPlayers: number,
+        difficulty: number,
+        minTime: number,
+        maxTime: number,
+        weight: number,
+        rank: number | null,
+        average: number | null,
+        imageUrl: string,
+        shelfLocation: string,
+        itemType: string,
+        description: string,
+        retailPrice: number | null,
+        bggRecAgeRange: string | null,
+        minAgeValue: number | null,
+        staffpicksname: string | null,
+        staffpicksdescription: string | null,
+        category: string[],
+        mechanism: string[],
+        designer: string[], // Initialize new fields as arrays
+        artist: string[],    // Initialize new fields as arrays
+        publisher: string[], // Initialize new fields as arrays
+        family: string | null,
+      } = {
         id: '',
         name: 'Unknown Game',
         minPlayers: 0,
@@ -641,20 +665,20 @@ function App() {
           case 'objectname': game.name = value; break;
           case 'minplayers': game.minPlayers = parseInt(value, 10) || 0; break;
           case 'maxplayers': game.maxPlayers = parseInt(value, 10) || 99; break;
+          case 'difficulty': game.difficulty = parseInt(value, 10) || 0; break;
           case 'minplaytime': game.minTime = parseInt(value, 10) || 0; break;
           case 'maxplaytime': game.maxTime = parseInt(value, 10) || 0; break;
-          case 'difficulty': game.difficulty = parseInt(value, 10) || 0; break;
+          case 'avgweight': game.weight = parseFloat(value) || 1; break;
+          case 'rank': game.rank = parseInt(value, 10) || null; break;
+          case 'average': game.average = parseFloat(value) || null; break;
+          case 'imageurl': game.imageUrl = value; break;
           case 'comment': game.shelfLocation = value; break;
           case 'description': game.description = value; break;
-          case 'imageurl': game.imageUrl = value; break;
-          case 'avgweight': game.weight = parseFloat(value) || 1; break;
           case 'itemtype':
             if (value.toLowerCase() === 'standalone') { game.itemType = 'Base Game'; }
             else if (value.toLowerCase() === 'expansion') { game.itemType = 'Expansion'; }
             else { game.itemType = value; }
             break;
-          case 'rank': game.rank = parseInt(value, 10) || null; break;
-          case 'average': game.average = parseFloat(value) || null; break;
           case 'retailprice': game.retailPrice = parseFloat(value) || null; break;
           case 'bggrecagerange':
             game.bggRecAgeRange = value || null;
@@ -673,7 +697,7 @@ function App() {
           case 'artist': game.artist = parseCommaSeparatedTags(value); break;     // Parse artist
           case 'publisher': game.publisher = parseCommaSeparatedTags(value); break; // Parse publisher
           case 'family': game.family = value || null; break;
-          default: game[header] = value; break;
+          default: break;
         }
       });
 
@@ -696,11 +720,11 @@ function App() {
     return games;
   };
 
-  const uniqueCategories = useMemo(() => getUniqueValues(boardGames, 'category'), [boardGames]);
-  const uniqueMechanisms = useMemo(() => getUniqueValues(boardGames, 'mechanism'), [boardGames]);
-  const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer'), [boardGames]); // New unique values
-  const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist'), [boardGames]);     // New unique values
-  const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher'), [boardGames]); // New unique values
+  const uniqueCategories = useMemo(() => getUniqueValues(boardGames, 'category') as Array<string>, [boardGames]);
+  const uniqueMechanisms = useMemo(() => getUniqueValues(boardGames, 'mechanism') as Array<string>, [boardGames]);
+  const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer') as Array<string>, [boardGames]); // New unique values
+  const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist') as Array<string>, [boardGames]);     // New unique values
+  const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher') as Array<string>, [boardGames]); // New unique values
 
 
   // Filtered games based on all criteria
@@ -711,10 +735,10 @@ function App() {
       const matchesTime = desiredTime === 0 || (game.minTime <= desiredTime && game.maxTime >= desiredTime);
       // Updated complexity filter logic to use "Low", "Medium", "High"
       const matchesWeightCategory = selectedWeightCategory === '' ||
-                                    (selectedWeightCategory === 'Low' && game.weight >= 1 && game.weight <= 2) ||
-                                    (selectedWeightCategory === 'Medium' && game.weight > 2 && game.weight <= 2.5) ||
-                                    (selectedWeightCategory === 'High' && game.weight > 2.5 && game.weight <= 5);
-      const matchesMinAge = selectedMinAge === 0 || (game.minAgeValue > 0 && game.minAgeValue <= selectedMinAge);
+        (selectedWeightCategory === 'Low' && game.weight >= 1 && game.weight <= 2) ||
+        (selectedWeightCategory === 'Medium' && game.weight > 2 && game.weight <= 2.5) ||
+        (selectedWeightCategory === 'High' && game.weight > 2.5 && game.weight <= 5);
+      const matchesMinAge = selectedMinAge === 0 || (game.minAgeValue !== null && game.minAgeValue > 0 && game.minAgeValue <= selectedMinAge);
       const matchesTop100 = !showTop100 || (game.rank !== null && game.rank <= 100);
       const matchesRetailGames = !showRetailGames || (game.retailPrice !== null);
       const matchesPublisherOfTheMonth = !showPublisherOfTheMonth || (game.shelfLocation === 'Publisher of the Month');
@@ -754,7 +778,7 @@ function App() {
   };
 
   // Callback to apply filters from the modal
-  const applyFiltersFromModal = (newFilters:CurrentFilters) => {
+  const applyFiltersFromModal = (newFilters: CurrentFilters) => {
     // searchTerm is NOT updated by the modal, it's independent
     setDesiredPlayers(newFilters.desiredPlayers);
     setDesiredTime(newFilters.desiredTime);
@@ -930,7 +954,7 @@ function App() {
                   src={game.imageUrl}
                   alt={game.name}
                   className="w-32 h-32 object-cover rounded-lg mb-4 shadow-sm"
-                  onError={(e) => {
+                  onError={(e: any) => {
                     if (!e.target.src.includes('placehold.co')) {
                       e.target.onerror = null;
                       e.target.src = `https://placehold.co/150x150/cccccc/000000?text=${game.name ? game.name.substring(0, 5) : 'Game'}...`;
@@ -973,7 +997,7 @@ function App() {
                     : `${game.minTime} - ${game.maxTime} min`}
                 </p>
                 {/* Age Range - Moved under Time and simplified display */}
-                {game.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
+                {game.minAgeValue !== null && game.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
                   <p className="text-gray-700 text-sm mb-1">
                     <span className="font-semibold">Ages:</span> {game.minAgeValue}+
                   </p>
@@ -988,9 +1012,9 @@ function App() {
                     >
                       {/* Convert numeric weight to Low/Medium/High for display */}
                       {game.weight >= 1 && game.weight <= 2 ? 'Low' :
-                       game.weight > 2 && game.weight <= 2.5 ? 'Medium' :
-                       game.weight > 2.5 && game.weight <= 5 ? 'High' :
-                       ''}
+                        game.weight > 2 && game.weight <= 2.5 ? 'Medium' :
+                          game.weight > 2.5 && game.weight <= 5 ? 'High' :
+                            ''}
                     </span>
                   </p>
                 )}
@@ -1032,7 +1056,7 @@ function App() {
           >
             <button
               onClick={() => setSelectedGame(null)}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200"
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold p-[5px] rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-[20px]"
               aria-label="Close"
             >
               &times;
@@ -1044,7 +1068,7 @@ function App() {
                   src={selectedGame.imageUrl}
                   alt={selectedGame.name}
                   className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64" // Added max-h-64
-                  onError={(e) => {
+                  onError={(e: any) => {
                     if (!e.target.src.includes('placehold.co')) {
                       e.target.onerror = null;
                       e.target.src = `https://placehold.co/400x400/cccccc/000000?text=${selectedGame.name ? selectedGame.name.substring(0, 10) : 'Game'}...`;
@@ -1129,7 +1153,7 @@ function App() {
                     : `${selectedGame.minTime} - ${selectedGame.maxTime} min`}
                 </p>
                 {/* Age Range in modal - Moved under Time and simplified display */}
-                {selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
+                {selectedGame.minAgeValue !== null && selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
                   <p className="text-gray-700 text-lg sm:text-xl mb-2">
                     <span className="font-semibold">Ages:</span> {selectedGame.minAgeValue}+
                   </p>
@@ -1143,9 +1167,9 @@ function App() {
                     >
                       {/* Convert numeric weight to Low/Medium/High for display */}
                       {selectedGame.weight >= 1 && selectedGame.weight <= 2 ? 'Low' :
-                       selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
-                       selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
-                       ''}
+                        selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
+                          selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
+                            ''}
                     </span>
                   </p>
                 )}
@@ -1171,44 +1195,47 @@ function App() {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* General Filter Modal */}
-      {showGeneralFilterModal && (
-        <GeneralFilterModal
-          currentFilters={{
-            searchTerm, // Pass searchTerm to the modal even if it doesn't manage it
-            desiredPlayers,
-            desiredTime,
-            selectedWeightCategory,
-            selectedMinAge,
-            showTop100,
-            showRetailGames,
-            showPublisherOfTheMonth,
-            showNewArrivals,
-            showStaffPicks,
-            selectedCategories,
-            selectedMechanisms,
-            selectedDesigners,   // Pass new filter states
-            selectedArtists,       // Pass new filter states
-            selectedPublishers, // Pass new filter states
-            showNCDesignedGames,
-          }}
-          uniqueCategories={uniqueCategories}
-          uniqueMechanisms={uniqueMechanisms}
-          uniqueDesigners={uniqueDesigners} // Pass unique values
-          uniqueArtists={uniqueArtists}    // Pass unique values
-          uniquePublishers={uniquePublishers} // Pass unique values
-          onApplyFilters={applyFiltersFromModal}
-          onClose={() => setShowGeneralFilterModal(false)}
-        />
-      )}
+      {
+        showGeneralFilterModal && (
+          <GeneralFilterModal
+            currentFilters={{
+              searchTerm, // Pass searchTerm to the modal even if it doesn't manage it
+              desiredPlayers,
+              desiredTime,
+              selectedWeightCategory,
+              selectedMinAge,
+              showTop100,
+              showRetailGames,
+              showPublisherOfTheMonth,
+              showNewArrivals,
+              showStaffPicks,
+              selectedCategories,
+              selectedMechanisms,
+              selectedDesigners,   // Pass new filter states
+              selectedArtists,       // Pass new filter states
+              selectedPublishers, // Pass new filter states
+              showNCDesignedGames,
+            }}
+            uniqueCategories={uniqueCategories}
+            uniqueMechanisms={uniqueMechanisms}
+            uniqueDesigners={uniqueDesigners} // Pass unique values
+            uniqueArtists={uniqueArtists}    // Pass unique values
+            uniquePublishers={uniquePublishers} // Pass unique values
+            onApplyFilters={applyFiltersFromModal}
+            onClose={() => setShowGeneralFilterModal(false)}
+          />
+        )
+      }
 
       {/* Footer */}
       <footer className="text-center mt-8 text-gray-600 text-sm">
         <p>&copy; 2025 Well Played Board Game Cafe. All rights reserved.</p>
       </footer>
-    </div>
+    </div >
   );
 }
 
