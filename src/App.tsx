@@ -32,7 +32,7 @@ type BoardGame = {
 // IMPORTANT: Replace this with the actual URL of your published Google Sheet data (e.g., as CSV)
 // Example for a published CSV: 'https://docs.google.com/sheets/d/e/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv'
 // You will need to replace 'YOUR_SHEET_ID' and potentially 'gid' if you have multiple sheets.
-const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZh8leZ1fjF9dDXaZbD31Bz_9yLAy9GWcW3_YRjKszaqqEadpdi4egRrh38ChCRAMpTbVhU-98wEi/pub?gid=161508505&single=true&output=csv'; // <<<--- REPLACE THIS LINE WITH YOUR REAL URL
+const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ82tONzKAbS4g8sfREBApuIw7f8WfIFN2z98r6Br8FEWw8jZK3dCRZXl5XbY8SZbRMLUNp8H7ov99W/pub?gid=202930632&single=true&output=csv'; // <<<--- REPLACE THIS LINE WITH YOUR REAL URL
 
 // Utility function to get unique values for filters
 const getUniqueValues = (data: Array<BoardGame>, key: keyof BoardGame) => {
