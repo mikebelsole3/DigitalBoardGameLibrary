@@ -2,7 +2,7 @@
   "name": "my-project",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://mikebelsole3.github.io/DigitalBoardGameLibrary/",
+  "homepage": "https://mikebelsole3.github.io/digitalboardgamelibrary",
   "type": "module",
   "scripts": {
     "dev": "vite",
