@@ -27,7 +27,8 @@ type BoardGame = {
   artist: Array<string>,
   publisher: Array<string>,
   family: string | null,
-  own: number
+  own: number,
+  yearPublished: number | null // Added yearPublished
 }
 
 // IMPORTANT: Replace this with the actual URL of your published Google Sheet data (e.g., as CSV)
@@ -96,7 +97,8 @@ type CurrentFilters = {
   selectedDesigners: Array<string>,
   selectedArtists: Array<string>,
   selectedPublishers: Array<string>,
-  showNCDesignedGames: boolean
+  showNCDesignedGames: boolean,
+  selectedYearPublished: number // Added selectedYearPublished
 }
 
 type GeneralFilterModalProps = {
@@ -106,6 +108,7 @@ type GeneralFilterModalProps = {
   uniqueDesigners: Array<string>,
   uniqueArtists: Array<string>,
   uniquePublishers: Array<string>,
+  uniqueYearsPublished: Array<number>, // Added uniqueYearsPublished
   onApplyFilters: (newFilters: CurrentFilters) => void,
   onClose: () => void,
 }
@@ -119,6 +122,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
     uniqueDesigners,
     uniqueArtists,
     uniquePublishers,
+    uniqueYearsPublished, // Destructure uniqueYearsPublished
     onApplyFilters,
     onClose
   } = props;
@@ -137,6 +141,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
   const [tempSelectedArtists, setTempSelectedArtists] = useState(currentFilters.selectedArtists);
   const [tempSelectedPublishers, setTempSelectedPublishers] = useState(currentFilters.selectedPublishers);
   const [tempShowNCDesignedGames, setTempShowNCDesignedGames] = useState(currentFilters.showNCDesignedGames);
+  const [tempSelectedYearPublished, setTempSelectedYearPublished] = useState(currentFilters.selectedYearPublished); // Added tempSelectedYearPublished
 
   // New state for advanced filters collapse
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -207,6 +212,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
       selectedArtists: tempSelectedArtists,
       selectedPublishers: tempSelectedPublishers,
       showNCDesignedGames: tempShowNCDesignedGames,
+      selectedYearPublished: tempSelectedYearPublished, // Pass selectedYearPublished
     });
   };
 
@@ -225,6 +231,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
     setTempSelectedArtists([]);
     setTempSelectedPublishers([]);
     setTempShowNCDesignedGames(false);
+    setTempSelectedYearPublished(0); // Reset selectedYearPublished
     setShowAdvancedFilters(false); // Reset advanced filters state too
   };
 
@@ -473,6 +480,24 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
                     ))}
                   </div>
                 </div>
+
+                {/* Year Published Select */}
+                <div>
+                  <label htmlFor="modalYearPublished" className="block text-gray-700 font-semibold mb-2">
+                    Year Published
+                  </label>
+                  <select
+                    id="modalYearPublished"
+                    value={tempSelectedYearPublished}
+                    onChange={(e) => setTempSelectedYearPublished(parseInt(e.target.value, 10))}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                  >
+                    <option value={0}>Any</option>
+                    {uniqueYearsPublished.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
           </div>
@@ -527,6 +552,7 @@ function App() {
   const [selectedArtists, setSelectedArtists] = useState<Array<string>>([]);
   const [selectedPublishers, setSelectedPublishers] = useState<Array<string>>([]);
   const [showNCDesignedGames, setShowNCDesignedGames] = useState(false);
+  const [selectedYearPublished, setSelectedYearPublished] = useState(0); // Added selectedYearPublished state
 
   const [showGeneralFilterModal, setShowGeneralFilterModal] = useState(false);
 
@@ -635,7 +661,8 @@ function App() {
         artist: string[],
         publisher: string[],
         family: string | null,
-        own: number
+        own: number,
+        yearPublished: number | null // Added yearPublished
       } = {
         id: '',
         name: 'Unknown Game',
@@ -662,7 +689,8 @@ function App() {
         artist: [],
         publisher: [],
         family: null,
-        own: 0
+        own: 0,
+        yearPublished: null // Initialize yearPublished
       };
 
       headers.forEach((header, index) => {
@@ -705,6 +733,7 @@ function App() {
           case 'publisher': game.publisher = parseCommaSeparatedTags(value); break;
           case 'family': game.family = value || null; break;
           case 'own': game.own = parseInt(value, 10) || 0; break;
+          case 'yearpublished': game.yearPublished = parseInt(value, 10) || null; break; // Parse yearPublished
           default: break;
         }
       });
@@ -735,6 +764,11 @@ function App() {
   const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer') as Array<string>, [boardGames]);
   const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist') as Array<string>, [boardGames]);
   const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher') as Array<string>, [boardGames]);
+  // Get unique years published and sort them in descending order
+  const uniqueYearsPublished = useMemo(() => {
+    const years = boardGames.map(game => game.yearPublished).filter((year): year is number => year !== null);
+    return [...new Set(years)].sort((a, b) => b - a);
+  }, [boardGames]);
 
 
   // Filtered games based on all criteria
@@ -756,12 +790,13 @@ function App() {
       const matchesDesigners = selectedDesigners.length === 0 || selectedDesigners.some(designer => game.designer.includes(designer));
       const matchesArtists = selectedArtists.length === 0 || selectedArtists.some(artist => game.artist.includes(artist));
       const matchesPublishers = selectedPublishers.length === 0 || selectedPublishers.some(publisher => game.publisher.includes(publisher));
+      const matchesYearPublished = selectedYearPublished === 0 || (game.yearPublished !== null && game.yearPublished === selectedYearPublished); // Added yearPublished filter
 
       const matchesNCDesignedGames = !showNCDesignedGames || (game.family && game.family.includes('Organizations: Game Designers of North Carolina'));
 
-      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesGamesWeSell && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames;
+      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesGamesWeSell && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames && matchesYearPublished; // Include matchesYearPublished
     });
-  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showGamesWeSell, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, boardGames]);
+  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showGamesWeSell, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, selectedYearPublished, boardGames]); // Add selectedYearPublished to dependencies
 
   // Reset all filters (on main display)
   const handleResetFilters = () => {
@@ -779,6 +814,7 @@ function App() {
     setSelectedArtists([]);
     setSelectedPublishers([]);
     setShowNCDesignedGames(false);
+    setSelectedYearPublished(0); // Reset selectedYearPublished
   };
 
   // Callback to apply filters from the modal
@@ -796,6 +832,7 @@ function App() {
     setSelectedArtists(newFilters.selectedArtists);
     setSelectedPublishers(newFilters.selectedPublishers);
     setShowNCDesignedGames(newFilters.showNCDesignedGames);
+    setSelectedYearPublished(newFilters.selectedYearPublished); // Set selectedYearPublished
     setShowGeneralFilterModal(false); // Close modal after applying
   };
 
@@ -856,7 +893,7 @@ function App() {
         </div>
 
         {/* Display Applied Filters */}
-        {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showGamesWeSell || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0) && (
+        {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showGamesWeSell || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0 || selectedYearPublished !== 0) && ( // Added selectedYearPublished
           <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Applied Filters</h3>
             <div className="flex flex-wrap justify-center gap-3">
@@ -903,6 +940,11 @@ function App() {
               {showNCDesignedGames && (
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
                   Designed in NC
+                </span>
+              )}
+              {selectedYearPublished !== 0 && ( // Display applied year filter
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  Year: {selectedYearPublished}
                 </span>
               )}
               {selectedCategories.length > 0 && (
@@ -1112,7 +1154,8 @@ function App() {
               </div>
 
               <div className="text-left flex-1">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3">{selectedGame.name}</h2>
+                {/* Added pr-12 to prevent title from going behind close button */}
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3 pr-12">{selectedGame.name}</h2>
                 {selectedGame.rank !== null && selectedGame.rank <= 100 && (
                   <p className="mb-3 px-3 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
                     BGG Top 100 Game
@@ -1185,7 +1228,11 @@ function App() {
                     Price: ${selectedGame.retailPrice.toFixed(2)}
                   </p>
                 )}
-
+                {selectedGame.yearPublished !== null && ( // Display yearPublished in modal
+                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                    <span className="font-semibold">Published:</span> {selectedGame.yearPublished}
+                  </p>
+                )}
                 {/* Description in modal - now scrollable */}
                 {selectedGame.description && (
                   <p className="text-gray-600 text-base sm:text-lg mt-4 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap pr-2 border border-gray-300 p-3 rounded-lg bg-gray-50">
@@ -1219,12 +1266,14 @@ function App() {
             selectedArtists,
             selectedPublishers,
             showNCDesignedGames,
+            selectedYearPublished,
           }}
           uniqueCategories={uniqueCategories}
           uniqueMechanisms={uniqueMechanisms}
           uniqueDesigners={uniqueDesigners}
           uniqueArtists={uniqueArtists}
           uniquePublishers={uniquePublishers}
+          uniqueYearsPublished={uniqueYearsPublished} // Pass uniqueYearsPublished
           onApplyFilters={applyFiltersFromModal}
           onClose={() => setShowGeneralFilterModal(false)}
         />
@@ -1233,7 +1282,7 @@ function App() {
 
     {/* Footer */}
     <footer className="text-center mt-8 text-gray-600 text-sm flex-shrink-0">
-      <p>&copy; 2025 Well Played Board Game Cafe. All rights reserved.</p>
+      <p>&copy; 2025 Tabletop Inn. All rights reserved.</p>
     </footer>
   </div >
 );
