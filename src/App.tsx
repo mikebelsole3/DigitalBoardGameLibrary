@@ -804,7 +804,7 @@ function App() {
       {/* Header */}
       <header className="text-center mb-8 bg-white p-6 rounded-xl shadow-lg">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-800 mb-2">
-          🎲 Well Played Board Game Cafe Library 📚
+          🎲 Tabletop Inn Game Library 📚
         </h1>
         <p className="text-lg text-gray-700">Explore our collection of over 600 board games!</p>
       </header>
