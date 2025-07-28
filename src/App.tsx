@@ -220,7 +220,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-50 overflow-auto"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 pt-16 z-50 overflow-auto"
       onClick={onClose} // Close modal when clicking outside
     >
       <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
