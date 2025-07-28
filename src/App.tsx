@@ -1047,8 +1047,8 @@ function App() {
         className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-y-auto" // Outer overlay is scrollable
         onClick={() => setSelectedGame(null)} // Click outside to close
       >
-        {/* Changed items-center to items-start */}
-        <div className="flex items-start justify-center min-h-full p-4">
+        {/* Changed items-start to items-center */}
+        <div className="flex items-center justify-center min-h-full p-4">
           <div
             className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
