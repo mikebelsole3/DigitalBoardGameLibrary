@@ -806,7 +806,7 @@ function App() {
         <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-800 mb-2">
           🎲 Tabletop Inn Game Library 📚
         </h1>
-        <p className="text-lg text-gray-700">Explore our collection of over 600 board games!</p>
+        <p className="text-lg text-gray-700">Explore our collection of over 800 board games!</p>
       </header>
 
       {/* Search Bar */}
