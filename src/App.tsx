@@ -34,10 +34,21 @@ type BoardGame = {
 // You will need to replace 'YOUR_SHEET_ID' and potentially 'gid' if you have multiple sheets.
 const GOOGLE_SHEET_DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ82tONzKAbS4g8sfREBApuIw7f8WfIFN2z98r6Br8FEWw8jZK3dCRZXl5XbY8SZbRMLUNp8H7ov99W/pub?gid=202930632&single=true&output=csv';
 
-// Utility function to get unique values for filters
+// Utility function to get unique values for filters and sort them alphabetically, ignoring articles
 const getUniqueValues = (data: Array<BoardGame>, key: keyof BoardGame) => {
   const values = data.flatMap(item => item[key] || []).filter(value => Boolean(value));
-  return [...new Set(values)].sort();
+  const uniqueValues = [...new Set(values)] as string[]; // Cast to string[] for string methods
+
+  // Function to normalize string for sorting (ignoring articles)
+  const normalizeForSort = (str: string) => {
+    return str.toLowerCase().replace(/^(a|an|the)\s+/i, '');
+  };
+
+  return uniqueValues.sort((a, b) => {
+    const normalizedA = normalizeForSort(a);
+    const normalizedB = normalizeForSort(b);
+    return normalizedA.localeCompare(normalizedB);
+  });
 };
 
 // Function to get discrete colors for the weight rating
@@ -220,270 +231,272 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 pt-16 z-50 overflow-auto"
+      className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-y-auto" // Outer overlay is scrollable
       onClick={onClose} // Close modal when clicking outside
     >
-      <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside from closing modal */}
-        <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center">All Filters</h3>
+      <div className="flex items-center justify-center min-h-full p-4"> {/* Flex container for centering */}
+        <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside from closing modal */}
+          <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center">All Filters</h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-          {/* Desired Players Input with Buttons */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Desired Players
-            </label>
-            <div className="flex items-center justify-center space-x-2 bg-gray-100 p-2 rounded-lg border border-gray-300">
-              <button
-                onClick={() => handleTempPlayersChange(-1)}
-                className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
-                disabled={tempDesiredPlayers <= 0}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+            {/* Desired Players Input with Buttons */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">
+                Desired Players
+              </label>
+              <div className="flex items-center justify-center space-x-2 bg-gray-100 p-2 rounded-lg border border-gray-300">
+                <button
+                  onClick={() => handleTempPlayersChange(-1)}
+                  className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
+                  disabled={tempDesiredPlayers <= 0}
+                >
+                  -
+                </button>
+                <span className="text-2xl font-bold text-gray-800 w-12 text-center">
+                  {tempDesiredPlayers === 0 ? 'Any' : tempDesiredPlayers}
+                </span>
+                <button
+                  onClick={() => handleTempPlayersChange(1)}
+                  className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Desired Time Input with Buttons */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">
+                Desired Play Time (min)
+              </label>
+              <div className="flex items-center justify-center space-x-2 bg-gray-100 p-2 rounded-lg border border-gray-300">
+                <button
+                  onClick={() => handleTempTimeChange(-5)}
+                  className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
+                  disabled={tempDesiredTime <= 0}
+                >
+                  -
+                </button>
+                <span className="text-2xl font-bold text-gray-800 w-20 text-center">
+                  {tempDesiredTime === 0 ? 'Any' : `${tempDesiredTime} min`}
+                </span>
+                <button
+                  onClick={() => handleTempTimeChange(5)}
+                  className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Complexity Filter */}
+            <div>
+              <label htmlFor="modalWeightCategory" className="block text-gray-700 font-semibold mb-2">
+                Complexity
+              </label>
+              <select
+                id="modalWeightCategory"
+                value={tempSelectedWeightCategory}
+                onChange={(e) => setTempSelectedWeightCategory(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
               >
-                -
-              </button>
-              <span className="text-2xl font-bold text-gray-800 w-12 text-center">
-                {tempDesiredPlayers === 0 ? 'Any' : tempDesiredPlayers}
-              </span>
-              <button
-                onClick={() => handleTempPlayersChange(1)}
-                className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
+                <option value="">All</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+
+            {/* Minimum Age Filter */}
+            <div>
+              <label htmlFor="modalMinAge" className="block text-gray-700 font-semibold mb-2">
+                Minimum Age
+              </label>
+              <select
+                id="modalMinAge"
+                value={tempSelectedMinAge}
+                onChange={(e) => setTempSelectedMinAge(parseInt(e.target.value, 10))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
               >
-                +
-              </button>
+                <option value={0}>Any</option>
+                <option value={3}>3+</option>
+                <option value={5}>5+</option>
+                <option value={8}>8+</option>
+                <option value={10}>10+</option>
+              </select>
             </div>
           </div>
 
-          {/* Desired Time Input with Buttons */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Desired Play Time (min)
-            </label>
-            <div className="flex items-center justify-center space-x-2 bg-gray-100 p-2 rounded-lg border border-gray-300">
-              <button
-                onClick={() => handleTempTimeChange(-5)}
-                className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
-                disabled={tempDesiredTime <= 0}
-              >
-                -
-              </button>
-              <span className="text-2xl font-bold text-gray-800 w-20 text-center">
-                {tempDesiredTime === 0 ? 'Any' : `${tempDesiredTime} min`}
-              </span>
-              <button
-                onClick={() => handleTempTimeChange(5)}
-                className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 text-lg"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Complexity Filter */}
-          <div>
-            <label htmlFor="modalWeightCategory" className="block text-gray-700 font-semibold mb-2">
-              Complexity
-            </label>
-            <select
-              id="modalWeightCategory"
-              value={tempSelectedWeightCategory}
-              onChange={(e) => setTempSelectedWeightCategory(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+          {/* Button Filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <button
+              onClick={() => setTempShowTop100(!tempShowTop100)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
+                }`}
             >
-              <option value="">All</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-          </div>
-
-          {/* Minimum Age Filter */}
-          <div>
-            <label htmlFor="modalMinAge" className="block text-gray-700 font-semibold mb-2">
-              Minimum Age
-            </label>
-            <select
-              id="modalMinAge"
-              value={tempSelectedMinAge}
-              onChange={(e) => setTempSelectedMinAge(parseInt(e.target.value, 10))}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              BGG Top 100 Games
+            </button>
+            <button
+              onClick={() => setTempShowGamesWeSell(!tempShowGamesWeSell)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowGamesWeSell ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
+                }`}
             >
-              <option value={0}>Any</option>
-              <option value={3}>3+</option>
-              <option value={5}>5+</option>
-              <option value={8}>8+</option>
-              <option value={10}>10+</option>
-            </select>
+              Games We Sell
+            </button>
+            <button
+              onClick={() => setTempShowStaffPicks(!tempShowStaffPicks)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowStaffPicks ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-pink-200 text-pink-800 hover:bg-pink-300'
+                }`}
+            >
+              Staff Picks
+            </button>
+            <button
+              onClick={() => setTempShowNCDesignedGames(!tempShowNCDesignedGames)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNCDesignedGames ? 'bg-[#155084] text-white hover:bg-blue-900' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
+                }`}
+            >
+              Games Designed in NC
+            </button>
           </div>
-        </div>
 
-        {/* Button Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <button
-            onClick={() => setTempShowTop100(!tempShowTop100)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
-              }`}
-          >
-            BGG Top 100 Games
-          </button>
-          <button
-            onClick={() => setTempShowGamesWeSell(!tempShowGamesWeSell)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowGamesWeSell ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
-              }`}
-          >
-            Games We Sell
-          </button>
-          <button
-            onClick={() => setTempShowStaffPicks(!tempShowStaffPicks)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowStaffPicks ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-pink-200 text-pink-800 hover:bg-pink-300'
-              }`}
-          >
-            Staff Picks
-          </button>
-          <button
-            onClick={() => setTempShowNCDesignedGames(!tempShowNCDesignedGames)}
-            className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNCDesignedGames ? 'bg-[#155084] text-white hover:bg-blue-900' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'
-              }`}
-          >
-            Games Designed in NC
-          </button>
-        </div>
+          {/* Advanced Filters Section (Collapsible) */}
+          <div className="mt-6 border border-gray-300 rounded-xl shadow-inner bg-gray-50">
+            <button
+              className="w-full flex justify-between items-center p-4 bg-gray-200 hover:bg-gray-300 rounded-t-xl font-bold text-lg text-gray-800 transition duration-200"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              Advanced Filters
+              <span className="text-2xl transform transition-transform duration-200">
+                {showAdvancedFilters ? '▲' : '▼'}
+              </span>
+            </button>
+            {showAdvancedFilters && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4">
+                {/* Category Multi-select */}
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Categories
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
+                    {uniqueCategories.map(cat => (
+                      <label key={cat} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedCategories.includes(cat)}
+                          onChange={() => handleTempCategoryToggle(cat)}
+                          className="mr-2 rounded text-blue-500 focus:ring-blue-500"
+                        />
+                        {cat}
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-        {/* Advanced Filters Section (Collapsible) */}
-        <div className="mt-6 border border-gray-300 rounded-xl shadow-inner bg-gray-50">
-          <button
-            className="w-full flex justify-between items-center p-4 bg-gray-200 hover:bg-gray-300 rounded-t-xl font-bold text-lg text-gray-800 transition duration-200"
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          >
-            Advanced Filters
-            <span className="text-2xl transform transition-transform duration-200">
-              {showAdvancedFilters ? '▲' : '▼'}
-            </span>
-          </button>
-          {showAdvancedFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4">
-              {/* Category Multi-select */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Categories
-                </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
-                  {uniqueCategories.map(cat => (
-                    <label key={cat} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
-                      <input
-                        type="checkbox"
-                        checked={tempSelectedCategories.includes(cat)}
-                        onChange={() => handleTempCategoryToggle(cat)}
-                        className="mr-2 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      {cat}
-                    </label>
-                  ))}
+                {/* Mechanism Multi-select */}
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Mechanisms
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
+                    {uniqueMechanisms.map(mech => (
+                      <label key={mech} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedMechanisms.includes(mech)}
+                          onChange={() => handleTempMechanismToggle(mech)}
+                          className="mr-2 rounded text-blue-500 focus:ring-blue-500"
+                        />
+                        {mech}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Designer Multi-select */}
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Designers
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
+                    {uniqueDesigners.map(designer => (
+                      <label key={designer} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedDesigners.includes(designer)}
+                          onChange={() => handleTempDesignerToggle(designer)}
+                          className="mr-2 rounded text-blue-500 focus:ring-blue-500"
+                        />
+                        {designer}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Artist Multi-select */}
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Artists
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
+                    {uniqueArtists.map(artist => (
+                      <label key={artist} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedArtists.includes(artist)}
+                          onChange={() => handleTempArtistToggle(artist)}
+                          className="mr-2 rounded text-blue-500 focus:ring-blue-500"
+                        />
+                        {artist}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Publisher Multi-select */}
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Publishers
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
+                    {uniquePublishers.map(publisher => (
+                      <label key={publisher} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedPublishers.includes(publisher)}
+                          onChange={() => handleTempPublisherToggle(publisher)}
+                          className="mr-2 rounded text-blue-500 focus:ring-blue-500"
+                        />
+                        {publisher}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
-
-              {/* Mechanism Multi-select */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Mechanisms
-                </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
-                  {uniqueMechanisms.map(mech => (
-                    <label key={mech} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
-                      <input
-                        type="checkbox"
-                        checked={tempSelectedMechanisms.includes(mech)}
-                        onChange={() => handleTempMechanismToggle(mech)}
-                        className="mr-2 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      {mech}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Designer Multi-select */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Designers
-                </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
-                  {uniqueDesigners.map(designer => (
-                    <label key={designer} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
-                      <input
-                        type="checkbox"
-                        checked={tempSelectedDesigners.includes(designer)}
-                        onChange={() => handleTempDesignerToggle(designer)}
-                        className="mr-2 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      {designer}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Artist Multi-select */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Artists
-                </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
-                  {uniqueArtists.map(artist => (
-                    <label key={artist} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
-                      <input
-                        type="checkbox"
-                        checked={tempSelectedArtists.includes(artist)}
-                        onChange={() => handleTempArtistToggle(artist)}
-                        className="mr-2 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      {artist}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Publisher Multi-select */}
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Publishers
-                </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-white">
-                  {uniquePublishers.map(publisher => (
-                    <label key={publisher} className="flex items-center p-1 hover:bg-gray-100 cursor-pointer rounded-md">
-                      <input
-                        type="checkbox"
-                        checked={tempSelectedPublishers.includes(publisher)}
-                        onChange={() => handleTempPublisherToggle(publisher)}
-                        className="mr-2 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      {publisher}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
 
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            onClick={handleResetClick}
-            className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition duration-200"
-          >
-            Reset Filters
-          </button>
-          <button
-            onClick={onClose}
-            className="px-6 py-3 bg-gray-300 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-400 transition duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleApplyClick}
-            className="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition duration-200"
-          >
-            Apply Filters
-          </button>
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              onClick={handleResetClick}
+              className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition duration-200"
+            >
+              Reset Filters
+            </button>
+            <button
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-300 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-400 transition duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleApplyClick}
+              className="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition duration-200"
+            >
+              Apply Filters
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1030,151 +1043,154 @@ function App() {
     {/* Expanded Game Modal */}
     {selectedGame && (
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-auto"
+        className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-y-auto" // Outer overlay is scrollable
         onClick={() => setSelectedGame(null)} // Click outside to close
       >
-        <div
-          className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
-        >
-          <button
-            onClick={() => setSelectedGame(null)}
-            // Increased size and padding for easier tapping
-            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-4xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-none"
-            aria-label="Close"
+        <div className="flex items-center justify-center min-h-full p-4"> {/* Flex container for centering */}
+          <div
+            className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
           >
-            &times;
-          </button>
+            <button
+              onClick={() => setSelectedGame(null)}
+              // Increased size and padding for easier tapping
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-4xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-none"
+              aria-label="Close"
+            >
+              &times;
+            </button>
 
-          <div className="flex flex-col md:flex-row items-start gap-6">
-            <div className="flex flex-col items-center md:items-start w-full md:w-1/2 lg:w-2/5">
-              <img
-                src={selectedGame.imageUrl}
-                alt={selectedGame.name}
-                className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64"
-                onError={(e: any) => {
-                  if (!e.target.src.includes('placehold.co')) {
-                    e.target.onerror = null;
-                    e.target.src = `https://placehold.co/400x400/cccccc/000000?text=${selectedGame.name ? selectedGame.name.substring(0, 10) : 'Game'}...`;
-                  }
-                }}
-              />
-              {/* Location - Moved under image */}
-              {selectedGame.shelfLocation && (
-                <p className="mt-4 px-4 py-2 bg-blue-200 text-blue-800 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                  Location: {selectedGame.shelfLocation}
-                </p>
-              )}
-
-              {/* Categories - Moved under image, now horizontally scrollable */}
-              {selectedGame.category && selectedGame.category.length > 0 && (
-                <div className="mt-4 w-full text-left">
-                  <span className="font-semibold text-gray-700">Categories:</span>
-                  <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                    {selectedGame.category.map((cat, i) => (
-                      <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
-                        {cat}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Mechanisms - Moved under image, now horizontally scrollable */}
-              {selectedGame.mechanism && selectedGame.mechanism.length > 0 && (
-                <div className="mt-2 w-full text-left">
-                  <span className="font-semibold text-gray-700">Mechanisms:</span>
-                  <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                    {selectedGame.mechanism.map((mech, i) => (
-                      <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
-                        {mech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="text-left flex-1">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3">{selectedGame.name}</h2>
-              {selectedGame.rank !== null && selectedGame.rank <= 100 && (
-                <p className="mb-3 px-3 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                  BGG Top 100 Game
-                </p>
-              )}
-
-              {/* Staff Pick Details in Modal */}
-              {selectedGame.staffpicksname && (
-                <div className="mb-3 p-3 bg-pink-100 rounded-lg shadow-inner">
-                  <p className="text-pink-800 font-bold text-lg mb-1">
-                    ⭐ Staff Pick by {selectedGame.staffpicksname} ⭐
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <div className="flex flex-col items-center md:items-start w-full md:w-1/2 lg:w-2/5">
+                <img
+                  src={selectedGame.imageUrl}
+                  alt={selectedGame.name}
+                  className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64"
+                  onError={(e: any) => {
+                    if (!e.target.src.includes('placehold.co')) {
+                      e.target.onerror = null;
+                      e.target.src = `https://placehold.co/400x400/cccccc/000000?text=${selectedGame.name ? selectedGame.name.substring(0, 10) : 'Game'}...`;
+                    }
+                  }}
+                />
+                {/* Location - Moved under image */}
+                {selectedGame.shelfLocation && (
+                  <p className="mt-4 px-4 py-2 bg-blue-200 text-blue-800 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                    Location: {selectedGame.shelfLocation}
                   </p>
-                  {selectedGame.staffpicksdescription && (
-                    <p className="text-pink-700 text-sm italic">
-                      "{selectedGame.staffpicksdescription}"
+                )}
+
+                {/* Categories - Moved under image, now horizontally scrollable */}
+                {selectedGame.category && selectedGame.category.length > 0 && (
+                  <div className="mt-4 w-full text-left">
+                    <span className="font-semibold text-gray-700">Categories:</span>
+                    <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                      {selectedGame.category.map((cat, i) => (
+                        <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mechanisms - Moved under image, now horizontally scrollable */}
+                {selectedGame.mechanism && selectedGame.mechanism.length > 0 && (
+                  <div className="mt-2 w-full text-left">
+                    <span className="font-semibold text-gray-700">Mechanisms:</span>
+                    <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                      {selectedGame.mechanism.map((mech, i) => (
+                        <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
+                          {mech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-left flex-1">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3">{selectedGame.name}</h2>
+                {selectedGame.rank !== null && selectedGame.rank <= 100 && (
+                  <p className="mb-3 px-3 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                    BGG Top 100 Game
+                  </p>
+                )}
+
+                {/* Staff Pick Details in Modal */}
+                {selectedGame.staffpicksname && (
+                  <div className="mb-3 p-3 bg-pink-100 rounded-lg shadow-inner">
+                    <p className="text-pink-800 font-bold text-lg mb-1">
+                      ⭐ Staff Pick by {selectedGame.staffpicksname} ⭐
                     </p>
-                  )}
-                </div>
-              )}
+                    {selectedGame.staffpicksdescription && (
+                      <p className="text-pink-700 text-sm italic">
+                        "{selectedGame.staffpicksdescription}"
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              {/* Designed in NC Label with Designer Name in modal */}
-              {selectedGame.family && selectedGame.family.includes('Organizations: Game Designers of North Carolina') && (
-                <p className="mb-3 px-3 py-1 bg-[#155084] text-white font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                  Designed in North Carolina by {selectedGame.designer.join(', ')}
-                </p>
-              )}
+                {/* Designed in NC Label with Designer Name in modal */}
+                {selectedGame.family && selectedGame.family.includes('Organizations: Game Designers of North Carolina') && (
+                  <p className="mb-3 px-3 py-1 bg-[#155084] text-white font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                    Designed in North Carolina by {selectedGame.designer.join(', ')}
+                  </p>
+                )}
 
-              <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                <span className="font-semibold">Players:</span>{' '}
-                {selectedGame.minPlayers === selectedGame.maxPlayers
-                  ? selectedGame.minPlayers
-                  : `${selectedGame.minPlayers} - ${selectedGame.maxPlayers}`}
-              </p>
-              <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                <span className="font-semibold">Time:</span>{' '}
-                {selectedGame.minTime === selectedGame.maxTime
-                  ? `${selectedGame.minTime} min`
-                  : `${selectedGame.minTime} - ${selectedGame.maxTime} min`}
-              </p>
-              {/* Age Range in modal - Moved under Time and simplified display */}
-              {selectedGame.minAgeValue !== null && selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
                 <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                  <span className="font-semibold">Ages:</span> {selectedGame.minAgeValue}+
+                  <span className="font-semibold">Players:</span>{' '}
+                  {selectedGame.minPlayers === selectedGame.maxPlayers
+                    ? selectedGame.minPlayers
+                    : `${selectedGame.minPlayers} - ${selectedGame.maxPlayers}`}
                 </p>
-              )}
-              {selectedGame.weight !== undefined && (
                 <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                  <span className="font-semibold">Complexity:</span>{' '}
-                  <span
-                    style={{ color: getColorForWeight(selectedGame.weight), fontWeight: 'bold' }}
-                    title={`Complexity: ${selectedGame.weight.toFixed(1)} out of 5`}
-                  >
-                    {/* Convert numeric weight to Low/Medium/High for display */}
-                    {selectedGame.weight >= 1 && selectedGame.weight <= 2 ? 'Low' :
-                      selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
-                        selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
-                          ''}
-                  </span>
+                  <span className="font-semibold">Time:</span>{' '}
+                  {selectedGame.minTime === selectedGame.maxTime
+                    ? `${selectedGame.minTime} min`
+                    : `${selectedGame.minTime} - ${selectedGame.maxTime} min`}
                 </p>
-              )}
-              {selectedGame.average !== null && (
-                <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                  <span className="font-semibold">BGG Rating:</span> {selectedGame.average.toFixed(2)}
-                </p>
-              )}
-              {/* Retail Price - Prominent display in modal */}
-              {selectedGame.retailPrice !== null && (
-                <p className="text-green-700 text-xl sm:text-2xl font-extrabold mt-3">
-                  Price: ${selectedGame.retailPrice.toFixed(2)}
-                </p>
-              )}
+                {/* Age Range in modal - Moved under Time and simplified display */}
+                {selectedGame.minAgeValue !== null && selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
+                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                    <span className="font-semibold">Ages:</span> {selectedGame.minAgeValue}+
+                  </p>
+                )}
+                {selectedGame.weight !== undefined && (
+                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                    <span className="font-semibold">Complexity:</span>{' '}
+                    <span
+                      style={{ color: getColorForWeight(selectedGame.weight), fontWeight: 'bold' }}
+                      title={`Complexity: ${selectedGame.weight.toFixed(1)} out of 5`}
+                    >
+                      {/* Convert numeric weight to Low/Medium/High for display */}
+                      {selectedGame.weight >= 1 && selectedGame.weight <= 2 ? 'Low' :
+                        selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
+                          selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
+                            ''}
+                    </span>
+                  </p>
+                )}
+                {/* BGG Rating */}
+                {selectedGame.average !== null && (
+                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                    <span className="font-semibold">BGG Rating:</span> {selectedGame.average.toFixed(2)}
+                  </p>
+                )}
+                {/* Retail Price - Prominent display in modal */}
+                {selectedGame.retailPrice !== null && (
+                  <p className="text-green-700 text-xl sm:text-2xl font-extrabold mt-3">
+                    Price: ${selectedGame.retailPrice.toFixed(2)}
+                  </p>
+                )}
 
-              {/* Description in modal - now scrollable */}
-              {selectedGame.description && (
-                <p className="text-gray-600 text-base sm:text-lg mt-4 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap pr-2 border border-gray-300 p-3 rounded-lg bg-gray-50">
-                  {selectedGame.description}
-                </p>
-              )}
+                {/* Description in modal - now scrollable */}
+                {selectedGame.description && (
+                  <p className="text-gray-600 text-base sm:text-lg mt-4 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap pr-2 border border-gray-300 p-3 rounded-lg bg-gray-50">
+                    {selectedGame.description}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
