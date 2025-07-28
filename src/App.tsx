@@ -220,7 +220,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-auto"
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-50 overflow-auto"
       onClick={onClose} // Close modal when clicking outside
     >
       <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
@@ -543,6 +543,21 @@ function App() {
 
   }, []);
 
+  // Effect to control body scrolling when a modal is open
+  useEffect(() => {
+    if (selectedGame || showGeneralFilterModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = ''; // Reset to default or 'auto'
+    }
+
+    // Cleanup function to ensure overflow is reset when component unmounts
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedGame, showGeneralFilterModal]); // Re-run effect when modal states change
+
+
   // Function to parse CSV text into an array of game objects
   const parseCSV = (csvText: string) => {
     const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -757,7 +772,7 @@ function App() {
     setDesiredPlayers(newFilters.desiredPlayers);
     setDesiredTime(newFilters.desiredTime);
     setSelectedWeightCategory(newFilters.selectedWeightCategory);
-    setSelectedMinAge(newFilters.selectedMinAge);
+    setSelectedMinAge(newFilters.selectedMinAge); // Corrected: changed setTempSelectedMinAge to setSelectedMinAge
     setShowTop100(newFilters.showTop100);
     setShowGamesWeSell(newFilters.showGamesWeSell);
     setShowStaffPicks(newFilters.showStaffPicks);
@@ -780,6 +795,7 @@ function App() {
 
   return (
     // The main container now uses `h-full` and `flex flex-col` to allow internal scrolling.
+    // Removed conditional overflow-hidden from here as it's now handled by useEffect on document.body
     <div className="h-full flex flex-col bg-gradient-to-br from-blue-100 to-purple-200 font-inter p-4 sm:p-6 md:p-8">
       {/* Header */}
       <header className="text-center mb-8 bg-white p-6 rounded-xl shadow-lg flex-shrink-0">
@@ -789,8 +805,8 @@ function App() {
         <p className="text-lg text-gray-700">Explore our collection of over 800 board games!</p>
       </header>
 
-      {/* Main content area - now scrollable */}
-      <main className="flex-1 overflow-y-auto pb-4"> {/* Added pb-4 for bottom padding */}
+      {/* Main content area - always scrollable internally */}
+      <main className="flex-1 overflow-y-auto pb-4">
         {/* Search Bar */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
           <div className="mb-6">
@@ -988,221 +1004,221 @@ function App() {
                           game.weight > 2 && game.weight <= 2.5 ? 'Medium' :
                             game.weight > 2.5 && game.weight <= 5 ? 'High' :
                               ''}
-                      </span>
-                    </p>
-                  )}
-                  {/* BGG Rating */}
-                  {game.average !== null && (
-                    <p className="text-gray-700 text-sm mb-1">
-                      <span className="font-semibold">BGG Rating:</span> {game.average.toFixed(2)}
-                    </p>
-                  )}
-                  {/* Retail Price - Prominent display */}
-                  {game.retailPrice !== null && (
-                    <p className="text-green-700 text-lg font-extrabold mt-2">
-                      Price: ${game.retailPrice.toFixed(2)}
-                    </p>
-                  )}
-                  {/* Removed Location from game card display */}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Expanded Game Modal */}
-      {selectedGame && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-auto"
-          onClick={() => setSelectedGame(null)} // Click outside to close
-        >
-          <div
-            className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
-          >
-            <button
-              onClick={() => setSelectedGame(null)}
-              // Increased size and padding for easier tapping
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-4xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-none"
-              aria-label="Close"
-            >
-              &times;
-            </button>
-
-            <div className="flex flex-col md:flex-row items-start gap-6">
-              <div className="flex flex-col items-center md:items-start w-full md:w-1/2 lg:w-2/5">
-                <img
-                  src={selectedGame.imageUrl}
-                  alt={selectedGame.name}
-                  className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64"
-                  onError={(e: any) => {
-                    if (!e.target.src.includes('placehold.co')) {
-                      e.target.onerror = null;
-                      e.target.src = `https://placehold.co/400x400/cccccc/000000?text=${selectedGame.name ? selectedGame.name.substring(0, 10) : 'Game'}...`;
-                    }
-                  }}
-                />
-                {/* Location - Moved under image */}
-                {selectedGame.shelfLocation && (
-                  <p className="mt-4 px-4 py-2 bg-blue-200 text-blue-800 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                    Location: {selectedGame.shelfLocation}
-                  </p>
-                )}
-
-                {/* Categories - Moved under image, now horizontally scrollable */}
-                {selectedGame.category && selectedGame.category.length > 0 && (
-                  <div className="mt-4 w-full text-left">
-                    <span className="font-semibold text-gray-700">Categories:</span>
-                    <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                      {selectedGame.category.map((cat, i) => (
-                        <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
-                          {cat}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Mechanisms - Moved under image, now horizontally scrollable */}
-                {selectedGame.mechanism && selectedGame.mechanism.length > 0 && (
-                  <div className="mt-2 w-full text-left">
-                    <span className="font-semibold text-gray-700">Mechanisms:</span>
-                    <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                      {selectedGame.mechanism.map((mech, i) => (
-                        <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
-                          {mech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="text-left flex-1">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3">{selectedGame.name}</h2>
-                {selectedGame.rank !== null && selectedGame.rank <= 100 && (
-                  <p className="mb-3 px-3 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                    BGG Top 100 Game
-                  </p>
-                )}
-
-                {/* Staff Pick Details in Modal */}
-                {selectedGame.staffpicksname && (
-                  <div className="mb-3 p-3 bg-pink-100 rounded-lg shadow-inner">
-                    <p className="text-pink-800 font-bold text-lg mb-1">
-                      ⭐ Staff Pick by {selectedGame.staffpicksname} ⭐
-                    </p>
-                    {selectedGame.staffpicksdescription && (
-                      <p className="text-pink-700 text-sm italic">
-                        "{selectedGame.staffpicksdescription}"
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Designed in NC Label with Designer Name in modal */}
-                {selectedGame.family && selectedGame.family.includes('Organizations: Game Designers of North Carolina') && (
-                  <p className="mb-3 px-3 py-1 bg-[#155084] text-white font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
-                    Designed in North Carolina by {selectedGame.designer.join(', ')}
-                  </p>
-                )}
-
-                <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                  <span className="font-semibold">Players:</span>{' '}
-                  {selectedGame.minPlayers === selectedGame.maxPlayers
-                    ? selectedGame.minPlayers
-                    : `${selectedGame.minPlayers} - ${selectedGame.maxPlayers}`}
-                </p>
-                <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                  <span className="font-semibold">Time:</span>{' '}
-                  {selectedGame.minTime === selectedGame.maxTime
-                    ? `${selectedGame.minTime} min`
-                    : `${selectedGame.minTime} - ${selectedGame.maxTime} min`}
-                </p>
-                {/* Age Range in modal - Moved under Time and simplified display */}
-                {selectedGame.minAgeValue !== null && selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
-                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                    <span className="font-semibold">Ages:</span> {selectedGame.minAgeValue}+
-                  </p>
-                )}
-                {selectedGame.weight !== undefined && (
-                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                    <span className="font-semibold">Complexity:</span>{' '}
-                    <span
-                      style={{ color: getColorForWeight(selectedGame.weight), fontWeight: 'bold' }}
-                      title={`Complexity: ${selectedGame.weight.toFixed(1)} out of 5`}
-                    >
-                      {/* Convert numeric weight to Low/Medium/High for display */}
-                      {selectedGame.weight >= 1 && selectedGame.weight <= 2 ? 'Low' :
-                        selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
-                          selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
-                            ''}
                     </span>
                   </p>
                 )}
-                {selectedGame.average !== null && (
-                  <p className="text-gray-700 text-lg sm:text-xl mb-2">
-                    <span className="font-semibold">BGG Rating:</span> {selectedGame.average.toFixed(2)}
+                {/* BGG Rating */}
+                {game.average !== null && (
+                  <p className="text-gray-700 text-sm mb-1">
+                    <span className="font-semibold">BGG Rating:</span> {game.average.toFixed(2)}
                   </p>
                 )}
-                {/* Retail Price - Prominent display in modal */}
-                {selectedGame.retailPrice !== null && (
-                  <p className="text-green-700 text-xl sm:text-2xl font-extrabold mt-3">
-                    Price: ${selectedGame.retailPrice.toFixed(2)}
+                {/* Retail Price - Prominent display */}
+                {game.retailPrice !== null && (
+                  <p className="text-green-700 text-lg font-extrabold mt-2">
+                    Price: ${game.retailPrice.toFixed(2)}
                   </p>
                 )}
-
-                {/* Description in modal - now scrollable */}
-                {selectedGame.description && (
-                  <p className="text-gray-600 text-base sm:text-lg mt-4 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap pr-2 border border-gray-300 p-3 rounded-lg bg-gray-50">
-                    {selectedGame.description}
-                  </p>
-                )}
+                {/* Removed Location from game card display */}
               </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+
+    {/* Expanded Game Modal */}
+    {selectedGame && (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-auto"
+        onClick={() => setSelectedGame(null)} // Click outside to close
+      >
+        <div
+          className="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full mx-auto relative transform scale-95 md:scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
+        >
+          <button
+            onClick={() => setSelectedGame(null)}
+            // Increased size and padding for easier tapping
+            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-4xl font-bold p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 leading-none"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            <div className="flex flex-col items-center md:items-start w-full md:w-1/2 lg:w-2/5">
+              <img
+                src={selectedGame.imageUrl}
+                alt={selectedGame.name}
+                className="w-full h-auto object-contain rounded-lg shadow-lg mb-4 max-h-64"
+                onError={(e: any) => {
+                  if (!e.target.src.includes('placehold.co')) {
+                    e.target.onerror = null;
+                    e.target.src = `https://placehold.co/400x400/cccccc/000000?text=${selectedGame.name ? selectedGame.name.substring(0, 10) : 'Game'}...`;
+                  }
+                }}
+              />
+              {/* Location - Moved under image */}
+              {selectedGame.shelfLocation && (
+                <p className="mt-4 px-4 py-2 bg-blue-200 text-blue-800 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                  Location: {selectedGame.shelfLocation}
+                </p>
+              )}
+
+              {/* Categories - Moved under image, now horizontally scrollable */}
+              {selectedGame.category && selectedGame.category.length > 0 && (
+                <div className="mt-4 w-full text-left">
+                  <span className="font-semibold text-gray-700">Categories:</span>
+                  <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                    {selectedGame.category.map((cat, i) => (
+                      <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Mechanisms - Moved under image, now horizontally scrollable */}
+              {selectedGame.mechanism && selectedGame.mechanism.length > 0 && (
+                <div className="mt-2 w-full text-left">
+                  <span className="font-semibold text-gray-700">Mechanisms:</span>
+                  <div className="flex flex-nowrap overflow-x-auto gap-2 mt-1 pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                    {selectedGame.mechanism.map((mech, i) => (
+                      <span key={i} className="flex-shrink-0 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
+                        {mech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="text-left flex-1">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-3">{selectedGame.name}</h2>
+              {selectedGame.rank !== null && selectedGame.rank <= 100 && (
+                <p className="mb-3 px-3 py-1 bg-yellow-400 text-yellow-900 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                  BGG Top 100 Game
+                </p>
+              )}
+
+              {/* Staff Pick Details in Modal */}
+              {selectedGame.staffpicksname && (
+                <div className="mb-3 p-3 bg-pink-100 rounded-lg shadow-inner">
+                  <p className="text-pink-800 font-bold text-lg mb-1">
+                    ⭐ Staff Pick by {selectedGame.staffpicksname} ⭐
+                  </p>
+                  {selectedGame.staffpicksdescription && (
+                    <p className="text-pink-700 text-sm italic">
+                      "{selectedGame.staffpicksdescription}"
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Designed in NC Label with Designer Name in modal */}
+              {selectedGame.family && selectedGame.family.includes('Organizations: Game Designers of North Carolina') && (
+                <p className="mb-3 px-3 py-1 bg-[#155084] text-white font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
+                  Designed in North Carolina by {selectedGame.designer.join(', ')}
+                </p>
+              )}
+
+              <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                <span className="font-semibold">Players:</span>{' '}
+                {selectedGame.minPlayers === selectedGame.maxPlayers
+                  ? selectedGame.minPlayers
+                  : `${selectedGame.minPlayers} - ${selectedGame.maxPlayers}`}
+              </p>
+              <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                <span className="font-semibold">Time:</span>{' '}
+                {selectedGame.minTime === selectedGame.maxTime
+                  ? `${selectedGame.minTime} min`
+                  : `${selectedGame.minTime} - ${selectedGame.maxTime} min`}
+              </p>
+              {/* Age Range in modal - Moved under Time and simplified display */}
+              {selectedGame.minAgeValue !== null && selectedGame.minAgeValue > 0 && ( // Only display if minAgeValue is greater than 0
+                <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                  <span className="font-semibold">Ages:</span> {selectedGame.minAgeValue}+
+                </p>
+              )}
+              {selectedGame.weight !== undefined && (
+                <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                  <span className="font-semibold">Complexity:</span>{' '}
+                  <span
+                    style={{ color: getColorForWeight(selectedGame.weight), fontWeight: 'bold' }}
+                    title={`Complexity: ${selectedGame.weight.toFixed(1)} out of 5`}
+                  >
+                    {/* Convert numeric weight to Low/Medium/High for display */}
+                    {selectedGame.weight >= 1 && selectedGame.weight <= 2 ? 'Low' :
+                      selectedGame.weight > 2 && selectedGame.weight <= 2.5 ? 'Medium' :
+                        selectedGame.weight > 2.5 && selectedGame.weight <= 5 ? 'High' :
+                          ''}
+                  </span>
+                </p>
+              )}
+              {selectedGame.average !== null && (
+                <p className="text-gray-700 text-lg sm:text-xl mb-2">
+                  <span className="font-semibold">BGG Rating:</span> {selectedGame.average.toFixed(2)}
+                </p>
+              )}
+              {/* Retail Price - Prominent display in modal */}
+              {selectedGame.retailPrice !== null && (
+                <p className="text-green-700 text-xl sm:text-2xl font-extrabold mt-3">
+                  Price: ${selectedGame.retailPrice.toFixed(2)}
+                </p>
+              )}
+
+              {/* Description in modal - now scrollable */}
+              {selectedGame.description && (
+                <p className="text-gray-600 text-base sm:text-lg mt-4 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap pr-2 border border-gray-300 p-3 rounded-lg bg-gray-50">
+                  {selectedGame.description}
+                </p>
+              )}
             </div>
           </div>
         </div>
+      </div>
+    )
+    }
+
+    {/* General Filter Modal */}
+    {
+      showGeneralFilterModal && (
+        <GeneralFilterModal
+          currentFilters={{
+            searchTerm,
+            desiredPlayers,
+            desiredTime,
+            selectedWeightCategory,
+            selectedMinAge,
+            showTop100,
+            showGamesWeSell,
+            showStaffPicks,
+            selectedCategories,
+            selectedMechanisms,
+            selectedDesigners,
+            selectedArtists,
+            selectedPublishers,
+            showNCDesignedGames,
+          }}
+          uniqueCategories={uniqueCategories}
+          uniqueMechanisms={uniqueMechanisms}
+          uniqueDesigners={uniqueDesigners}
+          uniqueArtists={uniqueArtists}
+          uniquePublishers={uniquePublishers}
+          onApplyFilters={applyFiltersFromModal}
+          onClose={() => setShowGeneralFilterModal(false)}
+        />
       )
-      }
+    }
 
-      {/* General Filter Modal */}
-      {
-        showGeneralFilterModal && (
-          <GeneralFilterModal
-            currentFilters={{
-              searchTerm,
-              desiredPlayers,
-              desiredTime,
-              selectedWeightCategory,
-              selectedMinAge,
-              showTop100,
-              showGamesWeSell,
-              showStaffPicks,
-              selectedCategories,
-              selectedMechanisms,
-              selectedDesigners,
-              selectedArtists,
-              selectedPublishers,
-              showNCDesignedGames,
-            }}
-            uniqueCategories={uniqueCategories}
-            uniqueMechanisms={uniqueMechanisms}
-            uniqueDesigners={uniqueDesigners}
-            uniqueArtists={uniqueArtists}
-            uniquePublishers={uniquePublishers}
-            onApplyFilters={applyFiltersFromModal}
-            onClose={() => setShowGeneralFilterModal(false)}
-          />
-        )
-      }
-
-      {/* Footer */}
-      <footer className="text-center mt-8 text-gray-600 text-sm flex-shrink-0">
-        <p>&copy; 2025 Well Played Board Game Cafe. All rights reserved.</p>
-      </footer>
-    </div >
-  );
+    {/* Footer */}
+    <footer className="text-center mt-8 text-gray-600 text-sm flex-shrink-0">
+      <p>&copy; 2025 Well Played Board Game Cafe. All rights reserved.</p>
+    </footer>
+  </div >
+);
 }
 
 export default App;
