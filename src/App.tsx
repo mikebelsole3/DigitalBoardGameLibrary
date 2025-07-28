@@ -1030,7 +1030,7 @@ function App() {
     {/* Expanded Game Modal */}
     {selectedGame && (
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-auto"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-auto"
         onClick={() => setSelectedGame(null)} // Click outside to close
       >
         <div
