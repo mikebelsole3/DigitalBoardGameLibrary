@@ -1075,12 +1075,12 @@ function App() {
                     }
                   }}
                 />
-                {/* Location - Moved under image */}
-                {selectedGame.shelfLocation && (
+                {/* Location - Removed from here */}
+                {/* {selectedGame.shelfLocation && (
                   <p className="mt-4 px-4 py-2 bg-blue-200 text-blue-800 font-bold rounded-full text-sm sm:text-base shadow-sm inline-block">
                     Location: {selectedGame.shelfLocation}
                   </p>
-                )}
+                )} */}
 
                 {/* Categories - Moved under image, now horizontally scrollable */}
                 {selectedGame.category && selectedGame.category.length > 0 && (
