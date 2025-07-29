@@ -761,7 +761,11 @@ function App() {
 
   const uniqueCategories = useMemo(() => getUniqueValues(boardGames, 'category') as Array<string>, [boardGames]);
   const uniqueMechanisms = useMemo(() => getUniqueValues(boardGames, 'mechanism') as Array<string>, [boardGames]);
-  const uniqueDesigners = useMemo(() => getUniqueValues(boardGames, 'designer') as Array<string>, [boardGames]);
+  const uniqueDesigners = useMemo(() => {
+    const allDesigners = getUniqueValues(boardGames, 'designer') as Array<string>;
+    // Filter out "JR Honeycutt"
+    return allDesigners.filter(designer => designer !== "JR Honeycutt");
+  }, [boardGames]);
   const uniqueArtists = useMemo(() => getUniqueValues(boardGames, 'artist') as Array<string>, [boardGames]);
   const uniquePublishers = useMemo(() => getUniqueValues(boardGames, 'publisher') as Array<string>, [boardGames]);
   // Get unique years published and sort them in descending order
