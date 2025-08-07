@@ -28,7 +28,8 @@ type BoardGame = {
   publisher: Array<string>,
   family: string | null,
   own: number,
-  yearPublished: number | null // Added yearPublished
+  yearPublished: number | null,
+  acquisitionDate: Date | null // Added acquisitionDate as Date
 }
 
 // IMPORTANT: Replace this with the actual URL of your published Google Sheet data (e.g., as CSV)
@@ -98,7 +99,8 @@ type CurrentFilters = {
   selectedArtists: Array<string>,
   selectedPublishers: Array<string>,
   showNCDesignedGames: boolean,
-  selectedYearPublished: number // Added selectedYearPublished
+  selectedYearPublished: number,
+  showNewArrivals: boolean // Added showNewArrivals
 }
 
 type GeneralFilterModalProps = {
@@ -108,7 +110,7 @@ type GeneralFilterModalProps = {
   uniqueDesigners: Array<string>,
   uniqueArtists: Array<string>,
   uniquePublishers: Array<string>,
-  uniqueYearsPublished: Array<number>, // Added uniqueYearsPublished
+  uniqueYearsPublished: Array<number>,
   onApplyFilters: (newFilters: CurrentFilters) => void,
   onClose: () => void,
 }
@@ -122,7 +124,7 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
     uniqueDesigners,
     uniqueArtists,
     uniquePublishers,
-    uniqueYearsPublished, // Destructure uniqueYearsPublished
+    uniqueYearsPublished,
     onApplyFilters,
     onClose
   } = props;
@@ -141,7 +143,8 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
   const [tempSelectedArtists, setTempSelectedArtists] = useState(currentFilters.selectedArtists);
   const [tempSelectedPublishers, setTempSelectedPublishers] = useState(currentFilters.selectedPublishers);
   const [tempShowNCDesignedGames, setTempShowNCDesignedGames] = useState(currentFilters.showNCDesignedGames);
-  const [tempSelectedYearPublished, setTempSelectedYearPublished] = useState(currentFilters.selectedYearPublished); // Added tempSelectedYearPublished
+  const [tempSelectedYearPublished, setTempSelectedYearPublished] = useState(currentFilters.selectedYearPublished);
+  const [tempShowNewArrivals, setTempShowNewArrivals] = useState(currentFilters.showNewArrivals); // Added tempShowNewArrivals
 
   // New state for advanced filters collapse
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -212,7 +215,8 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
       selectedArtists: tempSelectedArtists,
       selectedPublishers: tempSelectedPublishers,
       showNCDesignedGames: tempShowNCDesignedGames,
-      selectedYearPublished: tempSelectedYearPublished, // Pass selectedYearPublished
+      selectedYearPublished: tempSelectedYearPublished,
+      showNewArrivals: tempShowNewArrivals, // Pass showNewArrivals
     });
   };
 
@@ -231,7 +235,8 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
     setTempSelectedArtists([]);
     setTempSelectedPublishers([]);
     setTempShowNCDesignedGames(false);
-    setTempSelectedYearPublished(0); // Reset selectedYearPublished
+    setTempSelectedYearPublished(0);
+    setTempShowNewArrivals(false); // Reset showNewArrivals
     setShowAdvancedFilters(false); // Reset advanced filters state too
   };
 
@@ -339,18 +344,11 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
           {/* Button Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <button
-              onClick={() => setTempShowTop100(!tempShowTop100)}
-              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
+              onClick={() => setTempShowNewArrivals(!tempShowNewArrivals)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowNewArrivals ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
                 }`}
             >
-              BGG Top 100 Games
-            </button>
-            <button
-              onClick={() => setTempShowGamesWeSell(!tempShowGamesWeSell)}
-              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowGamesWeSell ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
-                }`}
-            >
-              Games We Sell
+              New Arrivals
             </button>
             <button
               onClick={() => setTempShowStaffPicks(!tempShowStaffPicks)}
@@ -365,6 +363,20 @@ const GeneralFilterModal = (props: GeneralFilterModalProps) => {
                 }`}
             >
               Games Designed in NC
+            </button>
+            <button
+              onClick={() => setTempShowGamesWeSell(!tempShowGamesWeSell)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowGamesWeSell ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-200 text-green-800 hover:bg-green-300'
+                }`}
+            >
+              Games We Sell
+            </button>
+            <button
+              onClick={() => setTempShowTop100(!tempShowTop100)}
+              className={`px-6 py-3 font-bold rounded-lg shadow-md transition duration-200 ${tempShowTop100 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'
+                }`}
+            >
+              BGG Top 100 Games
             </button>
           </div>
 
@@ -552,7 +564,8 @@ function App() {
   const [selectedArtists, setSelectedArtists] = useState<Array<string>>([]);
   const [selectedPublishers, setSelectedPublishers] = useState<Array<string>>([]);
   const [showNCDesignedGames, setShowNCDesignedGames] = useState(false);
-  const [selectedYearPublished, setSelectedYearPublished] = useState(0); // Added selectedYearPublished state
+  const [selectedYearPublished, setSelectedYearPublished] = useState(0);
+  const [showNewArrivals, setShowNewArrivals] = useState(false); // Added showNewArrivals state
 
   const [showGeneralFilterModal, setShowGeneralFilterModal] = useState(false);
 
@@ -662,7 +675,8 @@ function App() {
         publisher: string[],
         family: string | null,
         own: number,
-        yearPublished: number | null // Added yearPublished
+        yearPublished: number | null,
+        acquisitionDate: Date | null // Initialize acquisitionDate
       } = {
         id: '',
         name: 'Unknown Game',
@@ -690,7 +704,8 @@ function App() {
         publisher: [],
         family: null,
         own: 0,
-        yearPublished: null // Initialize yearPublished
+        yearPublished: null,
+        acquisitionDate: null // Initialize acquisitionDate
       };
 
       headers.forEach((header, index) => {
@@ -733,7 +748,8 @@ function App() {
           case 'publisher': game.publisher = parseCommaSeparatedTags(value); break;
           case 'family': game.family = value || null; break;
           case 'own': game.own = parseInt(value, 10) || 0; break;
-          case 'yearpublished': game.yearPublished = parseInt(value, 10) || null; break; // Parse yearPublished
+          case 'yearpublished': game.yearPublished = parseInt(value, 10) || null; break;
+          case 'acquisitiondate': game.acquisitionDate = value ? new Date(value) : null; break; // Parse acquisitionDate
           default: break;
         }
       });
@@ -774,6 +790,13 @@ function App() {
     return [...new Set(years)].sort((a, b) => b - a);
   }, [boardGames]);
 
+  // Calculate the date three months ago for "New Arrivals" filter
+  const threeMonthsAgo = useMemo(() => {
+    const today = new Date();
+    const threeMonthsAgoDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
+    return threeMonthsAgoDate;
+  }, []);
+
 
   // Filtered games based on all criteria
   const filteredGames = useMemo(() => {
@@ -794,13 +817,20 @@ function App() {
       const matchesDesigners = selectedDesigners.length === 0 || selectedDesigners.some(designer => game.designer.includes(designer));
       const matchesArtists = selectedArtists.length === 0 || selectedArtists.some(artist => game.artist.includes(artist));
       const matchesPublishers = selectedPublishers.length === 0 || selectedPublishers.some(publisher => game.publisher.includes(publisher));
-      const matchesYearPublished = selectedYearPublished === 0 || (game.yearPublished !== null && game.yearPublished === selectedYearPublished); // Added yearPublished filter
+      const matchesYearPublished = selectedYearPublished === 0 || (game.yearPublished !== null && game.yearPublished === selectedYearPublished);
+
+      // New Arrivals filter logic
+      const matchesNewArrivals = !showNewArrivals || (
+        game.acquisitionDate &&
+        !isNaN(game.acquisitionDate.getTime()) && // Ensure it's a valid date
+        game.acquisitionDate >= threeMonthsAgo
+      );
 
       const matchesNCDesignedGames = !showNCDesignedGames || (game.family && game.family.includes('Organizations: Game Designers of North Carolina'));
 
-      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesGamesWeSell && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames && matchesYearPublished; // Include matchesYearPublished
+      return matchesSearch && matchesPlayers && matchesTime && matchesWeightCategory && matchesMinAge && matchesTop100 && matchesGamesWeSell && matchesStaffPicks && matchesCategories && matchesMechanisms && matchesDesigners && matchesArtists && matchesPublishers && matchesNCDesignedGames && matchesYearPublished && matchesNewArrivals; // Include matchesNewArrivals
     });
-  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showGamesWeSell, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, selectedYearPublished, boardGames]); // Add selectedYearPublished to dependencies
+  }, [searchTerm, desiredPlayers, desiredTime, selectedWeightCategory, selectedMinAge, showTop100, showGamesWeSell, showStaffPicks, selectedCategories, selectedMechanisms, selectedDesigners, selectedArtists, selectedPublishers, showNCDesignedGames, selectedYearPublished, showNewArrivals, boardGames, threeMonthsAgo]); // Add showNewArrivals and threeMonthsAgo to dependencies
 
   // Reset all filters (on main display)
   const handleResetFilters = () => {
@@ -818,7 +848,8 @@ function App() {
     setSelectedArtists([]);
     setSelectedPublishers([]);
     setShowNCDesignedGames(false);
-    setSelectedYearPublished(0); // Reset selectedYearPublished
+    setSelectedYearPublished(0);
+    setShowNewArrivals(false); // Reset showNewArrivals
   };
 
   // Callback to apply filters from the modal
@@ -826,7 +857,7 @@ function App() {
     setDesiredPlayers(newFilters.desiredPlayers);
     setDesiredTime(newFilters.desiredTime);
     setSelectedWeightCategory(newFilters.selectedWeightCategory);
-    setSelectedMinAge(newFilters.selectedMinAge); // Corrected: changed setTempSelectedMinAge to setSelectedMinAge
+    setSelectedMinAge(newFilters.selectedMinAge);
     setShowTop100(newFilters.showTop100);
     setShowGamesWeSell(newFilters.showGamesWeSell);
     setShowStaffPicks(newFilters.showStaffPicks);
@@ -836,7 +867,8 @@ function App() {
     setSelectedArtists(newFilters.selectedArtists);
     setSelectedPublishers(newFilters.selectedPublishers);
     setShowNCDesignedGames(newFilters.showNCDesignedGames);
-    setSelectedYearPublished(newFilters.selectedYearPublished); // Set selectedYearPublished
+    setSelectedYearPublished(newFilters.selectedYearPublished);
+    setShowNewArrivals(newFilters.showNewArrivals); // Set showNewArrivals
     setShowGeneralFilterModal(false); // Close modal after applying
   };
 
@@ -897,7 +929,7 @@ function App() {
         </div>
 
         {/* Display Applied Filters */}
-        {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showGamesWeSell || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0 || selectedYearPublished !== 0) && ( // Added selectedYearPublished
+        {(searchTerm !== '' || desiredPlayers !== 0 || desiredTime !== 0 || selectedWeightCategory !== '' || selectedMinAge !== 0 || showTop100 || showGamesWeSell || showStaffPicks || showNCDesignedGames || selectedCategories.length > 0 || selectedMechanisms.length > 0 || selectedDesigners.length > 0 || selectedArtists.length > 0 || selectedPublishers.length > 0 || selectedYearPublished !== 0 || showNewArrivals) && ( // Added showNewArrivals
           <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Applied Filters</h3>
             <div className="flex flex-wrap justify-center gap-3">
@@ -946,9 +978,14 @@ function App() {
                   Designed in NC
                 </span>
               )}
-              {selectedYearPublished !== 0 && ( // Display applied year filter
+              {selectedYearPublished !== 0 && (
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
                   Year: {selectedYearPublished}
+                </span>
+              )}
+              {showNewArrivals && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                  New Arrivals
                 </span>
               )}
               {selectedCategories.length > 0 && (
@@ -1007,8 +1044,8 @@ function App() {
                       if (!e.target.src.includes('placehold.co')) {
                         e.target.onerror = null;
                         e.target.src = `https://placehold.co/150x150/cccccc/000000?text=${game.name ? game.name.substring(0, 5) : 'Game'}...`;
-                      }
-                    }}
+                    }
+                  }}
                   />
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{game.name}</h3>
 
@@ -1271,13 +1308,14 @@ function App() {
             selectedPublishers,
             showNCDesignedGames,
             selectedYearPublished,
+            showNewArrivals,
           }}
           uniqueCategories={uniqueCategories}
           uniqueMechanisms={uniqueMechanisms}
           uniqueDesigners={uniqueDesigners}
           uniqueArtists={uniqueArtists}
           uniquePublishers={uniquePublishers}
-          uniqueYearsPublished={uniqueYearsPublished} // Pass uniqueYearsPublished
+          uniqueYearsPublished={uniqueYearsPublished}
           onApplyFilters={applyFiltersFromModal}
           onClose={() => setShowGeneralFilterModal(false)}
         />
